@@ -1,0 +1,64 @@
+* !https://anrisoftware.com/projects/attachments/download/217/apache2.0-small.gif! (© 2016 Erwin Müller)
+* "Source github.com":https://github.com/devent/ca_make
+* @git@anrisoftware.com:ca_make.git@
+* @git@github.com:devent/ca_make.git@
+
+h1. CA Make
+
+This project contains scripts to create a simple Certificate Authority that can issue and sign certificates and keeps track of them by a simple serial number system. The make script will download the tools needed to create certificates and to sign them. The repository should be cloned and a specific branch for a specific CA should be created.
+
+<pre>
+git clone git@github.com:devent/ca_make.git
+git checkout -b nttdata
+... create server certificates
+</pre>
+
+h2. Description
+
+h3. Configuration
+
+The @openssl.cnf@ file contains the main configuration of the Openssl client. The top of the file contains some default values to create server certificates and should be changed to one's own needs.
+
+<pre>
+KEY_SIZE               = 2048
+KEY_COUNTRY            = DE
+KEY_PROVINCE           = BAVARIA
+KEY_CITY               = MUNICH
+KEY_ORG                = NTT DATA GMBH
+KEY_ORGUNIT            = ERWIN MUELLER
+KEY_EMAIL              = admin@erwinmueller.nttdata.com.test
+</pre>
+
+h3. Files
+
+|._File|Description|
+|certsdb/|Directory of the signed certificates.|
+|certreqs/|Directory of the certificate requests.|
+|crl/|The certificate revocation lists.|
+|private/|The private keys.|
+|private/cakey.pem|The CA private key.|
+|private/cakey.key_insecure|The CA private key without the keyphrase.|
+|cacert.pem|The CA certificate.|
+|./index.txt|The index file.|
+|./openssl.cnf|The Openssl configuration file.|
+
+h2. Usage
+
+h3. Goals
+
+* @help@, shows the user help.
+* @setup@, installs the tools and creates the directory structure.
+* @ca@, creates the CA.
+* @server@, creates a new server certificate.
+
+h2. Examples
+
+Creates a new server certificate. If it's the very first run, the script will first install the needed tools, then create the directory structure, then create a CA, then create a certificate request for the server and then finally sign the request.
+
+<pre>
+make server SERVER_NAME=muellerpublic.nttdata.com.test
+</pre>
+
+h2. License
+
+Licensed under a "Apache 2.0 License.":http://www.apache.org/licenses/LICENSE-2.0 Permissions beyond the scope of this license may be available at @erwin.mueller@deventm.org@ or @erwin.mueller@nttdata.com@.

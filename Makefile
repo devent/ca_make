@@ -8,7 +8,6 @@ DEFAULT_ARGS := -config ./openssl.cnf
 CA_KEY_CSR = private/cakey.pem careq.pem
 INSECURE_CA_KEY = private/cakey.key_insecure
 CA_CRT = cacert.pem
-SERVER_FILE = server.key server.csr server.crt
 OPENSSL := /usr/bin/openssl
 PWGEN := /usr/bin/pwgen
 SED := /bin/sed
