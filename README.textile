@@ -39,8 +39,8 @@ h3. Files
 |private/cakey.pem|The CA private key.|
 |private/cakey.key_insecure|The CA private key without the keyphrase.|
 |cacert.pem|The CA certificate.|
-|./index.txt|The index file.|
-|./openssl.cnf|The Openssl configuration file.|
+|index.txt|The index file.|
+|openssl.cnf|The Openssl configuration file.|
 
 h2. Usage
 
