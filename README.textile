@@ -31,7 +31,7 @@ KEY_EMAIL              = admin@erwinmueller.nttdata.com.test
 
 h3. Files
 
-|._File|Description|
+|_.File|_.Description|
 |certsdb/|Directory of the signed certificates.|
 |certreqs/|Directory of the certificate requests.|
 |crl/|The certificate revocation lists.|
