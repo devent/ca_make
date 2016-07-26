@@ -5,6 +5,8 @@
 
 h1. CA Make
 
+h2. Introduction
+
 This project contains scripts to create a simple Certificate Authority that can issue and sign certificates and keeps track of them by a simple serial number system. The make script will download the tools needed to create certificates and to sign them. The repository should be cloned and a specific branch for a specific CA should be created.
 
 <pre>
@@ -13,8 +15,6 @@ git checkout -b nttdata
 ... create server certificates
 </pre>
 
-h2. Introduction
-
 The project creates a root CA and an intermediate CA that can create server certificates and sign them. It can also revoke server certificates and regenerate the certificate revocation lists. Basic functions can be done by the main @Makefile@ in the root directory, more advanced functions are located in the intermediate CA directory @Makefile@.
 
 * @./Makefile@
@@ -22,6 +22,10 @@ The project creates a root CA and an intermediate CA that can create server cert
 * @./root/openssl.cnf@
 * @./intermediate/Makefile@
 * @./intermediate/openssl.cnf@
+
+h2. Credits
+
+The project is based on a tutorial from Jamie Nguyen that can be found on "jamielinux.com":https://jamielinux.com/docs/openssl-certificate-authority/index.html
 
 h2. Configuration
 
