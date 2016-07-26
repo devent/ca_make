@@ -5,6 +5,7 @@ include ../utils/Makefile.functions
 SHELL := /bin/bash
 CA_CERT_DAYS := 3650
 SERVER_DAYS := 375
+OCSP_DAYS := 375
 OPENSSL_ARGS := -config ./openssl.cnf
 # Files and directories.
 DIRS := certs csr crl newcerts private passwords
@@ -20,7 +21,7 @@ CA_CHAIN := certs/ca_chain_cert.pem
 OPENSSL := /usr/bin/openssl
 PWGEN := /usr/bin/pwgen
 # Makefile.
-.PHONY: run setup ca clean show
+.PHONY: run setup ca clean show verify regenerate show_crl server show_server verify_server revoke_server ocsp start_ocsp query_ocsp
 .DEFAULT_GOAL := run
 
 run: ca ##@default Creates the intermediate certificate authority.
@@ -75,6 +76,36 @@ revoke_server: ##@targets Revokes the server certificate.
 	$(PRINT_ROOT_KEY_PASS)
 	$(OPENSSL) ca $(OPENSSL_ARGS) -revoke certs/$(SERVER_NAME)_cert.pem
 	$(MAKE) regenerate
+
+ocsp: ##@targets Creates the OCSP cryptographic pair.
+	$(call check_defined, OCSP_NAME, The OCSP server FQDN)
+	set $(SET_FLAG) \
+	&& SERVER_KEY=private/$(OCSP_NAME)_key.pem \
+	&& SERVER_CSR=csr/$(OCSP_NAME)_csr.pem \
+	&& SERVER_CERT=certs/$(OCSP_NAME)_cert.pem \
+	&& SERVER_KEY_PASS="passwords/`basename $$SERVER_KEY`.txt" \
+	&& $(PWGEN) 128 1 > "$$SERVER_KEY_PASS" \
+	&& $(call printInfo2, "$$SERVER_KEY_PASS: `cat $$SERVER_KEY_PASS`") \
+	&& $(OPENSSL) genrsa -aes256 -out $$SERVER_KEY 4096 \
+	&& $(call printWarn, "Common name must be: $(OCSP_NAME)") \
+	&& $(OPENSSL) req $(OPENSSL_ARGS) -key $$SERVER_KEY -new -sha256 -out $$SERVER_CSR \
+	&& $(PRINT_ROOT_KEY_PASS) \
+	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions ocsp -days $(OCSP_DAYS) -notext -md sha256 -in $$SERVER_CSR -out $$SERVER_CERT \
+	&& $(OPENSSL) x509 -noout -text -in $$SERVER_CERT
+
+start_ocsp: ##@targets Starts an OCSP responder on localhost.
+	$(call check_defined, OCSP_NAME, The OCSP server FQDN)
+	set $(SET_FLAG) \
+	&& SERVER_KEY=private/$(OCSP_NAME)_key.pem \
+	&& SERVER_CERT=certs/$(OCSP_NAME)_cert.pem \
+	&& $(call printServerKeyPass, "$$SERVER_KEY") \
+	&& $(OPENSSL) ocsp -port 127.0.0.1:2560 -text -sha256 -index index.txt -CA $(CA_CHAIN) -rkey $$SERVER_KEY -rsigner $$SERVER_CERT -nrequest 1
+
+query_ocsp: ##@targets Query the OCSP responder on localhost.
+	$(call check_defined, SERVER_NAME, The server FQDN)
+	set $(SET_FLAG) \
+	&& SERVER_CERT=certs/$(SERVER_NAME)_cert.pem \
+	&& openssl ocsp -CAfile $(CA_CHAIN) -url http://127.0.0.1:2560 -resp_text -issuer $(CA_CERT) -cert $$SERVER_CERT
 
 $(OPENSSL):
 	sudo apt-get install -y openssl

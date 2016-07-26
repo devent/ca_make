@@ -46,3 +46,11 @@ set $(SET_FLAG) \
 && ROOT_KEY_PASS="passwords/`basename $(ROOT_KEY)`.txt" \
 && $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`")
 endef
+
+# Prints the server certificate key passphrase.
+# Params:
+#   1. The server name.
+printServerKeyPass = \
+set $(SET_FLAG) \
+&& SERVER_KEY_PASS="passwords/`basename $1`.txt" \
+&& $(call printInfo2, "$$SERVER_KEY_PASS: `cat $$SERVER_KEY_PASS`")

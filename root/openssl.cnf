@@ -18,8 +18,11 @@ KEY_ORGUNIT            = ERWIN MUELLER Certificate Authority
 KEY_COMMON_NAME        = ERWIN MUELLER Root CA
 KEY_EMAIL              = admin@muellerpublic.de
 
-# Set the CRL distribution points URL
+# Set the CRL distribution URL.
 CRL_URL                = URI:https://muellerpublic.de/intermediate.crl.pem
+
+# Set the OCSP distribution URL.
+OCSP_URL               = OCSP;URI:http://ocsp.muellerpublic.de
 
 # Extra OBJECT IDENTIFIER info:
 #oid_file               = $ENV::HOME/.oid
@@ -172,6 +175,7 @@ authorityKeyIdentifier = keyid,issuer:always
 keyUsage = critical, digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
 crlDistributionPoints = $ENV::CRL_URL
+authorityInfoAccess = $ENV::OCSP_URL
 
 [ crl_ext ]
 # Extension for CRLs (`man x509v3_config`).

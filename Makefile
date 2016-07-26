@@ -1,8 +1,8 @@
 include utils/Makefile.help
 include utils/Makefile.functions
-SHELL := /bin/bash
 # Makefile.
-.PHONY: setup clean root intermediate server regenerate show_crl
+SHELL := /bin/bash
+.PHONY: setup clean root intermediate server regenerate show_crl ocsp
 .DEFAULT_GOAL := setup
 
 setup: root intermediate ##@default Creates the root and the intermediate certificate authority.
@@ -28,3 +28,7 @@ regenerate: ##@targets Regenerates the certificate revocation lists.
 
 show_crl: ##@targets Shows the certificate revocation lists.
 	cd intermediate && $(MAKE) show_crl
+
+ocsp: ##@targets Creates the OCSP cryptographic pair.
+	$(call check_defined, OCSP_NAME, The OCSP server FQDN)
+	cd intermediate && $(MAKE) ocsp OCSP_NAME=$(OCSP_NAME)
