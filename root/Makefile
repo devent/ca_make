@@ -50,8 +50,9 @@ $(ROOT_KEY):
 	set $(SET_FLAG) \
 	&& ROOT_KEY_PASS="passwords/`basename $(ROOT_KEY)`.txt" \
 	&& $(PWGEN) 128 1 > "$$ROOT_KEY_PASS" \
-	&& cat $$ROOT_KEY_PASS \
+	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`") \
 	&& $(OPENSSL) genrsa -aes256 -out $(ROOT_KEY) 4096
 
 $(CA_CERT):
+	$(call printInfo1, "Default values can be used.")
 	$(OPENSSL) req $(OPENSSL_ARGS) -key $(ROOT_KEY) -new -x509 -days $(CA_CERT_DAYS) -sha256 -extensions v3_ca -out $(CA_CERT)

@@ -48,13 +48,12 @@ server: ##@targets Creates a new server certificate.
 	&& SERVER_CERT=certs/$(SERVER_NAME)_cert.pem \
 	&& SERVER_KEY_PASS="passwords/`basename $$SERVER_KEY`.txt" \
 	&& $(PWGEN) 128 1 > "$$SERVER_KEY_PASS" \
-	&& echo -n "$$SERVER_KEY_PASS: " \
-	&& cat $$SERVER_KEY_PASS \
+	&& $(call printInfo2, "$$SERVER_KEY_PASS: `cat $$SERVER_KEY_PASS`") \
 	&& $(OPENSSL) genrsa -aes256 -out $$SERVER_KEY 2048 \
+	&& $(call printWarn, "Common name must be: $(SERVER_NAME)") \
 	&& $(OPENSSL) req $(OPENSSL_ARGS) -key $$SERVER_KEY -new -sha256 -out $$SERVER_CSR \
 	&& ROOT_KEY_PASS="passwords/`basename $(ROOT_KEY)`.txt" \
-	&& echo -n "$$ROOT_KEY_PASS: " \
-	&& cat $$ROOT_KEY_PASS \
+	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`") \
 	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions server_cert -days $(SERVER_DAYS) -notext -md sha256 -in $$SERVER_CSR -out $$SERVER_CERT
 
 show_server: ##@targets Shows the server certificate.
@@ -87,17 +86,21 @@ $(ROOT_KEY):
 	set $(SET_FLAG) \
 	&& ROOT_KEY_PASS="passwords/`basename $(ROOT_KEY)`.txt" \
 	&& $(PWGEN) 128 1 > "$$ROOT_KEY_PASS" \
-	&& cat $$ROOT_KEY_PASS \
+	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`") \
 	&& $(OPENSSL) genrsa -aes256 -out $(ROOT_KEY) 4096
 
 $(CA_CSR):
+	set $(SET_FLAG) \
+	&& ROOT_KEY_PASS="passwords/`basename $(ROOT_KEY)`.txt" \
+	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`")
+	$(call printInfo1, "Default values can be used.")
 	$(OPENSSL) req $(OPENSSL_ARGS) -new -sha256 -key $(ROOT_KEY) -out $(CA_CSR)
 
 $(CA_CERT):
 	set $(SET_FLAG) \
 	&& cd ../root \
 	&& ROOT_KEY_PASS="passwords/ca_key.pem.txt" \
-	&& cat $$ROOT_KEY_PASS \
+	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`") \
 	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions v3_intermediate_ca -days $(CA_CERT_DAYS) -notext -md sha256 -in ../intermediate/$(CA_CSR) -out ../intermediate/$(CA_CERT)
 
 $(CA_CHAIN):

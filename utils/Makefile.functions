@@ -12,6 +12,26 @@ __check_defined = \
     $(if $(value $1),, \
       $(error Undefined $1$(if $(value 2), ($(strip $2)))))
 
+# Outputs an info text.
+# Params:
+#   1. The text to output.
+printInfo1 = echo -e "\e[32mINFO: $1\e[0m"
+
+# Outputs an info text.
+# Params:
+#   1. The text to output.
+printInfo2 = echo -e "\e[34mINFO: $1\e[0m"
+
+# Outputs a warning text.
+# Params:
+#   1. The text to output.
+printWarn = echo -e "\e[33mWARN: $1\e[0m"
+
+# Outputs an error text.
+# Params:
+#   1. The text to output.
+printError = echo -e "\e[31mERROR: $1\e[0m"
+
 # Set to VERBOSE=true to enable debug output of bash commands.
 VERBOSE ?=
 ifdef VERBOSE
