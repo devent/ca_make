@@ -13,51 +13,71 @@ git checkout -b nttdata
 ... create server certificates
 </pre>
 
-h2. Description
+h2. Introduction
 
-h3. Configuration
+The project creates a root CA and an intermediate CA that can create server certificates and sign them. It can also revoke server certificates and regenerate the certificate revocation lists. Basic functions can be done by the main @Makefile@ in the root directory, more advanced functions are located in the intermediate CA directory @Makefile@.
 
-The @openssl.cnf@ file contains the main configuration of the Openssl client. The top of the file contains some default values to create server certificates and should be changed to one's own needs.
+* @./Makefile@
+* @./root/Makefile@
+* @./root/openssl.cnf@
+* @./intermediate/Makefile@
+* @./intermediate/openssl.cnf@
+
+h2. Configuration
+
+The @root/openssl.cnf@ and @intermediate/openssl.cnf@ file contains the main configuration of the Openssl client. The top of the file contains some default values to create server certificates and should be changed to one's own needs.
 
 <pre>
+# Change those for you own needs.
 KEY_SIZE               = 2048
 KEY_COUNTRY            = DE
 KEY_PROVINCE           = BAVARIA
 KEY_CITY               = MUNICH
-KEY_ORG                = NTT DATA GMBH
-KEY_ORGUNIT            = ERWIN MUELLER
-KEY_EMAIL              = admin@erwinmueller.nttdata.com.test
+KEY_ORG                = ERWIN MUELLER
+KEY_ORGUNIT            = ERWIN MUELLER Certificate Authority
+KEY_COMMON_NAME        = ERWIN MUELLER Root CA
+KEY_EMAIL              = admin@muellerpublic.de
+
+# Set the CRL distribution URL.
+CRL_URL                = URI:https://muellerpublic.de/intermediate.crl.pem
+
+# Set the OCSP distribution URL.
+OCSP_URL               = OCSP;URI:http://ocsp.muellerpublic.de
 </pre>
 
-h3. Files
+h2. Generated Files
 
 |_.File|_.Description|
-|certsdb/|Directory of the signed certificates.|
-|certreqs/|Directory of the certificate requests.|
-|crl/|The certificate revocation lists.|
-|private/|The private keys.|
-|private/cakey.pem|The CA private key.|
-|private/cakey.key_insecure|The CA private key without the keyphrase.|
-|cacert.pem|The CA certificate.|
-|index.txt|The index file.|
-|openssl.cnf|The Openssl configuration file.|
+|certs/|Directory of the signed certificates.|
+|certs/ca_cert.pem|The root CA certificate.|
+|certs/ca_chain_cert.pem|The intermediate CA chain certificate.|
+|certs/intermediate_cert.pem|The intermediate CA certificate.|
+|certs/ocsp.muellerpublic.de_cert.pem|The OCSP certificate.|
+|crl/|Directory of the certificate revocation lists.|
+|csr/|Directory of the certificate requests.|
+|passwords/|Directory of the private key passphrases.|
+|private/|Directory of the private keys.|
+|private/ca_key.pem|The root CA private key.|
+|private/intermediate_key.pem|The intermediate CA private key.|
+|private/ocsp.muellerpublic.de_key.pem|The OCSP private key.|
 
 h2. Usage
 
-h3. Goals
+* @make help@
 
-* @help@, shows the user help.
-* @setup@, installs the tools and creates the directory structure.
-* @ca@, creates the CA.
-* @server@, creates a new server certificate.
+Shows the available targets with a description.
 
-h2. Examples
+* @make@
 
-Creates a new server certificate. If it's the very first run, the script will first install the needed tools, then create the directory structure, then create a CA, then create a certificate request for the server and then finally sign the request.
+Creates the root and the intermediate CA.
 
-<pre>
-make server SERVER_NAME=muellerpublic.nttdata.com.test
-</pre>
+* @make server SERVER_NAME=test.muellerpublic.de@
+
+Creates the server certificate.
+
+* @make revoke_server SERVER_NAME=test.muellerpublic.de@
+
+Revokes the server certificate.
 
 h2. License
 
