@@ -47,7 +47,7 @@ $(FILES):
 $(SERIAL):
 
 $(ROOT_KEY):
-	set -x \
+	set $(SET_FLAG) \
 	&& ROOT_KEY_PASS="passwords/`basename $(ROOT_KEY)`.txt" \
 	&& $(PWGEN) 128 1 > "$$ROOT_KEY_PASS" \
 	&& cat $$ROOT_KEY_PASS \

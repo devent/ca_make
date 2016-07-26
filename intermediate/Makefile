@@ -36,13 +36,13 @@ show: ##@targets Shows the intermediate certificate.
 	$(OPENSSL) x509 -noout -text -in $(CA_CERT)
 
 verify: ##@targets Verifies the intermediate certificate against the root certificate.
-	set -x \
+	set $(SET_FLAG) \
 	&& cd ../root \
 	&& $(OPENSSL) verify -CAfile certs/ca_cert.pem ../intermediate/$(CA_CERT)
 
 server: ##@targets Creates a new server certificate.
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
-	set -x \
+	set $(SET_FLAG) \
 	&& SERVER_KEY=private/$(SERVER_NAME)_key.pem \
 	&& SERVER_CSR=csr/$(SERVER_NAME)_csr.pem \
 	&& SERVER_CERT=certs/$(SERVER_NAME)_cert.pem \
@@ -84,7 +84,7 @@ $(CRL_NUMBER):
 	echo 1000 > crlnumber
 
 $(ROOT_KEY):
-	set -x \
+	set $(SET_FLAG) \
 	&& ROOT_KEY_PASS="passwords/`basename $(ROOT_KEY)`.txt" \
 	&& $(PWGEN) 128 1 > "$$ROOT_KEY_PASS" \
 	&& cat $$ROOT_KEY_PASS \
@@ -94,7 +94,7 @@ $(CA_CSR):
 	$(OPENSSL) req $(OPENSSL_ARGS) -new -sha256 -key $(ROOT_KEY) -out $(CA_CSR)
 
 $(CA_CERT):
-	set -x \
+	set $(SET_FLAG) \
 	&& cd ../root \
 	&& ROOT_KEY_PASS="passwords/ca_key.pem.txt" \
 	&& cat $$ROOT_KEY_PASS \
