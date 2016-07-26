@@ -39,3 +39,10 @@ SET_FLAG := -x
 else
 SET_FLAG := +x
 endif
+
+# Prints the root certificate key passphrase.
+define PRINT_ROOT_KEY_PASS =
+set $(SET_FLAG) \
+&& ROOT_KEY_PASS="passwords/`basename $(ROOT_KEY)`.txt" \
+&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`")
+endef

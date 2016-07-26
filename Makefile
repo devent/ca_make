@@ -2,7 +2,7 @@ include utils/Makefile.help
 include utils/Makefile.functions
 SHELL := /bin/bash
 # Makefile.
-.PHONY: setup clean root intermediate
+.PHONY: setup clean root intermediate server regenerate show_crl
 .DEFAULT_GOAL := setup
 
 setup: root intermediate ##@default Creates the root and the intermediate certificate authority.
@@ -22,3 +22,9 @@ server:
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
 	cd intermediate && $(MAKE) server SERVER_NAME=$(SERVER_NAME)
 	cd intermediate && $(MAKE) verify_server SERVER_NAME=$(SERVER_NAME)
+
+regenerate: ##@targets Regenerates the certificate revocation lists.
+	cd intermediate && $(MAKE) regenerate
+
+show_crl: ##@targets Shows the certificate revocation lists.
+	cd intermediate && $(MAKE) show_crl

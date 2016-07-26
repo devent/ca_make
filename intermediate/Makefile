@@ -40,6 +40,13 @@ verify: ##@targets Verifies the intermediate certificate against the root certif
 	&& cd ../root \
 	&& $(OPENSSL) verify -CAfile certs/ca_cert.pem ../intermediate/$(CA_CERT)
 
+regenerate: ##@targets Regenerates the certificate revocation list.
+	$(PRINT_ROOT_KEY_PASS)
+	$(OPENSSL) ca $(OPENSSL_ARGS) -gencrl -out crl/intermediate.crl.pem
+
+show_crl: ##@targets Shows the certificate revocation list.
+	$(OPENSSL) crl -in crl/intermediate.crl.pem -noout -text
+
 server: ##@targets Creates a new server certificate.
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
 	set $(SET_FLAG) \
@@ -52,8 +59,7 @@ server: ##@targets Creates a new server certificate.
 	&& $(OPENSSL) genrsa -aes256 -out $$SERVER_KEY 2048 \
 	&& $(call printWarn, "Common name must be: $(SERVER_NAME)") \
 	&& $(OPENSSL) req $(OPENSSL_ARGS) -key $$SERVER_KEY -new -sha256 -out $$SERVER_CSR \
-	&& ROOT_KEY_PASS="passwords/`basename $(ROOT_KEY)`.txt" \
-	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`") \
+	&& $(PRINT_ROOT_KEY_PASS) \
 	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions server_cert -days $(SERVER_DAYS) -notext -md sha256 -in $$SERVER_CSR -out $$SERVER_CERT
 
 show_server: ##@targets Shows the server certificate.
@@ -63,6 +69,12 @@ show_server: ##@targets Shows the server certificate.
 verify_server: ##@targets Verifies the server certificate.
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
 	$(OPENSSL) verify -CAfile $(CA_CHAIN) certs/$(SERVER_NAME)_cert.pem
+
+revoke_server: ##@targets Revokes the server certificate.
+	$(call check_defined, SERVER_NAME, The server FQDN for the request)
+	$(PRINT_ROOT_KEY_PASS)
+	$(OPENSSL) ca $(OPENSSL_ARGS) -revoke certs/$(SERVER_NAME)_cert.pem
+	$(MAKE) regenerate
 
 $(OPENSSL):
 	sudo apt-get install -y openssl
@@ -90,9 +102,7 @@ $(ROOT_KEY):
 	&& $(OPENSSL) genrsa -aes256 -out $(ROOT_KEY) 4096
 
 $(CA_CSR):
-	set $(SET_FLAG) \
-	&& ROOT_KEY_PASS="passwords/`basename $(ROOT_KEY)`.txt" \
-	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`")
+	$(PRINT_ROOT_KEY_PASS)
 	$(call printInfo1, "Default values can be used.")
 	$(OPENSSL) req $(OPENSSL_ARGS) -new -sha256 -key $(ROOT_KEY) -out $(CA_CSR)
 
