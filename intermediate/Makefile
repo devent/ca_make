@@ -40,7 +40,7 @@ verify: ##@targets Verifies the intermediate certificate against the root certif
 	&& cd ../root \
 	&& $(OPENSSL) verify -CAfile certs/ca_cert.pem ../intermediate/$(CA_CERT)
 
-server:
+server: ##@targets Creates a new server certificate.
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
 	set -x \
 	&& SERVER_KEY=private/$(SERVER_NAME)_key.pem \
@@ -61,7 +61,7 @@ show_server: ##@targets Shows the server certificate.
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
 	$(OPENSSL) x509 -noout -text -in certs/$(SERVER_NAME)_cert.pem
 
-verify_server:
+verify_server: ##@targets Verifies the server certificate.
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
 	$(OPENSSL) verify -CAfile $(CA_CHAIN) certs/$(SERVER_NAME)_cert.pem
 

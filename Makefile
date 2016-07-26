@@ -17,3 +17,8 @@ root: ##@targets Creates a new root certificate authority.
 intermediate: ##@targets Creates a new intermediate certificate authority.
 	cd intermediate && $(MAKE)
 	cd intermediate && $(MAKE) verify
+
+server:
+	$(call check_defined, SERVER_NAME, The server FQDN for the request)
+	cd intermediate && $(MAKE) server SERVER_NAME=$(SERVER_NAME)
+	cd intermediate && $(MAKE) verify_server SERVER_NAME=$(SERVER_NAME)
