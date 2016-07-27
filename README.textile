@@ -1,5 +1,6 @@
 * !https://anrisoftware.com/projects/attachments/download/217/apache2.0-small.gif! (© 2016 Erwin Müller)
 * "Source github.com":https://github.com/devent/ca_make
+* "Archive github.com":https://github.com/devent/ca_make/archive/master.zip
 * @git@anrisoftware.com:ca_make.git@
 * @git@github.com:devent/ca_make.git@
 
@@ -7,7 +8,7 @@ h1. CA Make
 
 h2. Introduction
 
-This project contains scripts to create a simple Certificate Authority that can issue and sign certificates and keeps track of them by a simple serial number system. The make script will download the tools needed to create certificates and to sign them. The repository should be cloned and a specific branch for a specific CA should be created.
+This project contains scripts to create a simple Certificate Authority that can issue and sign certificates and keeps track of them by a simple serial number system. The project is based on @make@ scripts, because we need to keep track of files and run commands on the shell. The @make@ tool is originally designed to run source code build tools like @gcc@, but it is perfectly suited to build certificates. The project is designed to be cloned and to be run on a specific branch for a specific CA. The certificates and keys can also be committed to the repository. If a repository is used it should be held private because the scripts also keep track of the private key passphrases in plain text files. The proposed use case for the project is it to clone it and to checkout a new branch as shown in the example below. As an alternative, the project sources can also be downloaded and extracted in a new directory.
 
 <pre>
 git clone git@github.com:devent/ca_make.git
@@ -15,7 +16,7 @@ git checkout -b nttdata
 ... create server certificates
 </pre>
 
-The project creates a root CA and an intermediate CA that can create server certificates and sign them. It can also revoke server certificates and regenerate the certificate revocation lists. Basic functions can be done by the main @Makefile@ in the root directory, more advanced functions are located in the intermediate CA directory @Makefile@.
+The project creates a root CA and an intermediate CA that can create server certificates and sign them. It can also revoke server certificates and regenerate the certificate revocation lists. Basic functions can be accessed by the main @./Makefile@ in the root directory and more advanced functions are located in the intermediate CA directory @./intermediate/Makefile@.
 
 * @./Makefile@
 * @./root/Makefile@
@@ -26,6 +27,14 @@ The project creates a root CA and an intermediate CA that can create server cert
 h2. Credits
 
 The project is based on a tutorial from Jamie Nguyen that can be found on "jamielinux.com":https://jamielinux.com/docs/openssl-certificate-authority/index.html
+
+h2. Dependencies
+
+The project requires the following tool.
+
+* @make@ to run Makefile scripts;
+* @openssl@ to create and sign certificates;
+* @pwgen@ to generate passphrases for the certificate keys.
 
 h2. Configuration
 
