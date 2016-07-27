@@ -16,7 +16,7 @@ git checkout -b nttdata
 ... create server certificates
 </pre>
 
-The project creates a root CA and an intermediate CA that can create server certificates and sign them. It can also revoke server certificates and regenerate the certificate revocation lists. Basic functions can be accessed by the main @./Makefile@ in the root directory and more advanced functions are located in the intermediate CA directory @./intermediate/Makefile@.
+The project creates a root CA and an intermediate CA that can create server certificates and sign them. It can also revoke server certificates and regenerate the certificate revocation lists. Basic functions can be accessed by the main @./Makefile@ in the base directory and more advanced functions are located in the intermediate CA directory @./intermediate/Makefile@.
 
 * @./Makefile@
 * @./root/Makefile@
