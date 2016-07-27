@@ -49,6 +49,48 @@ CRL_URL                = URI:https://muellerpublic.de/intermediate.crl.pem
 OCSP_URL               = OCSP;URI:http://ocsp.muellerpublic.de
 </pre>
 
+h2. Usage
+
+h3. ./Makefile
+
+* @make help@
+
+Shows the available targets with a description.
+
+* @make@
+
+Creates the root and the intermediate CA.
+
+* @make regenerate@
+
+Regenerates the certificate revocation lists.
+
+* @make show_crl@
+
+Shows the certificate revocation lists.
+
+* @make ocsp@
+
+Creates the OCSP cryptographic pair.
+
+h3. intermediate/Makefile
+
+* @make server SERVER_NAME=test.muellerpublic.de@
+
+Creates the server certificate signed by the intermediate CA.
+
+* @make revoke_server SERVER_NAME=test.muellerpublic.de@
+
+Revokes the server certificate that was signed by the intermediate CA.
+
+* @make start_ocsp@
+
+Starts an OCSP responder on localhost.
+
+* @make query_ocsp@
+
+Query the OCSP responder on localhost.
+
 h2. Generated Files
 
 |_.File|_.Description|
@@ -64,24 +106,6 @@ h2. Generated Files
 |private/ca_key.pem|The root CA private key.|
 |private/intermediate_key.pem|The intermediate CA private key.|
 |private/ocsp.muellerpublic.de_key.pem|The OCSP private key.|
-
-h2. Usage
-
-* @make help@
-
-Shows the available targets with a description.
-
-* @make@
-
-Creates the root and the intermediate CA.
-
-* @make server SERVER_NAME=test.muellerpublic.de@
-
-Creates the server certificate.
-
-* @make revoke_server SERVER_NAME=test.muellerpublic.de@
-
-Revokes the server certificate.
 
 h2. License
 
