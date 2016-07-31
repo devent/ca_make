@@ -1,0 +1,29 @@
+# Defines variables for the server certificate.
+define SERVER_ARGS =
+SERVER_KEY=private/$(SERVER_NAME)_key.pem \
+&& SERVER_KEY_INSECURE=private/$(SERVER_NAME)_key_insecure.pem \
+&& SERVER_CSR=csr/$(SERVER_NAME)_csr.pem \
+&& SERVER_CERT=certs/$(SERVER_NAME)_cert.pem \
+&& SERVER_KEY_PASS="passwords/`basename $$SERVER_KEY`.txt"
+endef
+
+# Sets the server key size.
+SERVER_KEY_SIZE ?= 4096
+
+_create_key:
+	$(call check_defined, SERVER_NAME, The server FQDN for the request)
+	set $(SET_FLAG) \
+	&& $(SERVER_ARGS) \
+	&& $(PWGEN) 128 1 > "$$SERVER_KEY_PASS" \
+	&& $(call printInfo2, "$$SERVER_KEY_PASS: `cat $$SERVER_KEY_PASS`") \
+	&& $(OPENSSL) genrsa -aes256 -out $$SERVER_KEY $(SERVER_KEY_SIZE) \
+	&& $(call printInfo2, "$$SERVER_KEY_PASS: `cat $$SERVER_KEY_PASS`") \
+	&& $(OPENSSL) rsa -in $$SERVER_KEY -out $$SERVER_KEY_INSECURE
+
+_create_crt:
+	$(call check_defined, SERVER_NAME, The server FQDN for the request)
+	set $(SET_FLAG) \
+	&& $(SERVER_ARGS) \
+	&& $(call printWarn, "Common name must be: $(SERVER_NAME)") \
+	&& $(call printInfo2, "$$SERVER_KEY_PASS: `cat $$SERVER_KEY_PASS`") \
+	&& $(OPENSSL) req $(OPENSSL_ARGS) -key $$SERVER_KEY -new -sha256 -out $$SERVER_CSR \
