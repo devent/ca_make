@@ -1,12 +1,13 @@
 # Include utilities.
-include ../utils/Makefile.help
 include ../utils/Makefile.functions
+include ../utils/Makefile.help
+include ../utils/Makefile.ca
 # Misc.
 SHELL := /bin/bash
 CA_CERT_DAYS := 7300
 OPENSSL_ARGS := -config ./openssl.cnf
 # Files and directories.
-DIRS := certs crl newcerts private passwords
+DIRS := certs csr crl newcerts private passwords
 FILES := index.txt
 SERIAL := serial
 CONFIG_FILE := openssl.cnf
@@ -30,6 +31,10 @@ clean: ##@targets Deletes all created directories and files.
 
 show: ##@targets Shows the root certificate.
 	$(OPENSSL) x509 -noout -text -in $(CA_CERT)
+
+create_key: _create_key ##@targets Creates a new certificate key. Optionally, the key size can be specified by setting SERVER_KEY_SIZE.
+
+create_crt: _create_crt ##@targets Creates a new certificate signing request.
 
 $(OPENSSL):
 	sudo apt-get install -y openssl

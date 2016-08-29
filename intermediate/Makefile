@@ -1,6 +1,7 @@
 # Include utilities.
-include ../utils/Makefile.help
 include ../utils/Makefile.functions
+include ../utils/Makefile.help
+include ../utils/Makefile.ca
 # Misc.
 SHELL := /bin/bash
 CA_CERT_DAYS := 3650
@@ -48,18 +49,11 @@ regenerate: ##@targets Regenerates the certificate revocation list.
 show_crl: ##@targets Shows the certificate revocation list.
 	$(OPENSSL) crl -in crl/intermediate.crl.pem -noout -text
 
-server: ##@targets Creates a new server certificate.
+server: _create_key _create_crt ##@targets Creates a new server certificate.
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
 	set $(SET_FLAG) \
-	&& SERVER_KEY=private/$(SERVER_NAME)_key.pem \
-	&& SERVER_CSR=csr/$(SERVER_NAME)_csr.pem \
-	&& SERVER_CERT=certs/$(SERVER_NAME)_cert.pem \
-	&& SERVER_KEY_PASS="passwords/`basename $$SERVER_KEY`.txt" \
-	&& $(PWGEN) 128 1 > "$$SERVER_KEY_PASS" \
-	&& $(call printInfo2, "$$SERVER_KEY_PASS: `cat $$SERVER_KEY_PASS`") \
-	&& $(OPENSSL) genrsa -aes256 -out $$SERVER_KEY 2048 \
-	&& $(call printWarn, "Common name must be: $(SERVER_NAME)") \
-	&& $(OPENSSL) req $(OPENSSL_ARGS) -key $$SERVER_KEY -new -sha256 -out $$SERVER_CSR \
+	&& $(SERVER_ARGS) \
+	&& $(call printInfo1, "Signing '$$SERVER_CSR'...") \
 	&& $(PRINT_ROOT_KEY_PASS) \
 	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions server_cert -days $(SERVER_DAYS) -notext -md sha256 -in $$SERVER_CSR -out $$SERVER_CERT
 
