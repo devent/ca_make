@@ -31,7 +31,7 @@ setup: $(OPENSSL) $(DIRS) $(FILES)
 ca: setup $(ROOT_KEY) $(CA_CSR) $(CA_CERT) $(CA_CHAIN) $(SERIAL) $(CRL_NUMBER) ##@targets Creates a new intermediate certificate authority.
 
 clean: ##@targets Deletes all created directories and files.
-	rm -rf $(DIRS) $(FILES) $(SERIAL) index.txt.attr index.txt.attr.old index.txt.old crlnumber
+	rm -rf $(DIRS) $(FILES) $(SERIAL) index.txt.attr index.txt.attr.old index.txt.old crlnumber *.old
 
 show: ##@targets Shows the intermediate certificate.
 	$(OPENSSL) x509 -noout -text -in $(CA_CERT)
