@@ -100,6 +100,13 @@ h2. Generated Files
 |private/|Directory of the private keys.|
 |private/ca_key.pem|The root CA private key.|
 
+h2. Examples
+
+<pre>
+make
+make worker WORKER_IP=141.77.8.166 WORKER_NAME=k8-node-0.muellerpublic.de
+</pre>
+
 h2. License
 
 Licensed under a "Apache 2.0 License.":http://www.apache.org/licenses/LICENSE-2.0 Permissions beyond the scope of this license may be available at @erwin.mueller@deventm.org@ or @erwin.mueller@nttdata.com@.
