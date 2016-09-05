@@ -9,8 +9,8 @@ HOME                   = .
 RANDFILE               = $ENV::HOME/.rnd
 
 # Change those for you own needs.
-K8S_SERVICE_IP         = 192.168.1.6
-MASTER_HOST            = 168.128.13.0
+K8S_SERVICE_IP         = 141.77.8.165
+MASTER_HOST            = 10.254.0.1
 MASTER_DNS_NAME        =
 MASTER_IP              =
 MASTER_LOADBALANCER_IP =
@@ -46,12 +46,12 @@ serial            = $dir/serial
 RANDFILE          = $dir/private/.rand
 
 # The root key and root certificate.
-private_key       = $dir/private/kubernetes_key.pem
-certificate       = $dir/certs/kubernetes_cert.pem
+private_key       = $dir/private/ca_key.pem
+certificate       = $dir/certs/ca_cert.pem
 
 # For certificate revocation lists.
 crlnumber         = $dir/crlnumber
-crl               = $dir/crl/kubernetes_crl.pem
+crl               = $dir/crl/ca_crl.pem
 crl_extensions    = crl_ext
 default_crl_days  = 30
 
