@@ -1,0 +1,105 @@
+* !https://anrisoftware.com/projects/attachments/download/217/apache2.0-small.gif! (© 2016 Erwin Müller)
+* "Source github.com":https://github.com/devent/ca_make
+* "Archive github.com":https://github.com/devent/ca_make/archive/master.zip
+* @git@anrisoftware.com:ca_make.git@
+* @git@github.com:devent/ca_make.git@
+
+h1. Kubernetes CA Make
+
+h2. Introduction
+
+Contains Make script to create certificates for a Kubernetes cluster. Specifically, it creates a certificate authority to self sign the certificates, a Kubernetes server certificate and multiple Kubernetes worker certificates.
+
+The project is designed to be cloned and to be run on a specific branch for a specific CA. The certificates and keys can also be committed to the repository. If a repository is used it should be held private because the scripts also keep track of the private key passphrases in plain text files. The proposed use case for the project is it to clone it and to checkout a new branch as shown in the example below. As an alternative, the project sources can also be downloaded and extracted in a new directory. A password-less key is also generated and saved with the @_insecure@ label.
+
+<pre>
+git clone git@github.com:devent/ca_make.git
+git checkout -b nttdata
+... create server certificates
+</pre>
+
+h2. Credits
+
+* The project is based on the guide that can be found on "Cluster TLS using OpenSSL [coreos.com]":https://coreos.com/kubernetes/docs/latest/openssl.html
+* A description how to create Kubernetes certificates can be found at "Ubuntu Nodes with Calico [kubernetes.io]":http://kubernetes.io/docs/getting-started-guides/ubuntu-calico/
+* "Deploy Kubernetes Master Node(s) [coreos.com]":https://coreos.com/kubernetes/docs/latest/deploy-master.html
+
+h2. Dependencies
+
+The project requires the following tool.
+
+* @make@ to run Makefile scripts;
+* @openssl@ to create and sign certificates;
+* @pwgen@ to generate passphrases for the certificate keys.
+
+h2. Configuration
+
+The @openssl_server.cnf@ and @openssl_worker.cnf@ file contains the configurations for the Kubernetes server and workers, respectively, of the Openssl client. The top of the file contains some default values to create server certificates and should be changed to one's own needs.
+
+* @K8S_SERVICE_IP@, the IP address of the Kubernetes public server address;
+* @MASTER_HOST@, the IP address of the first Kubernetes node;
+* @MASTER_DNS_NAME@,
+* @MASTER_IP@,
+* @MASTER_LOADBALANCER_IP@, for HA setup.
+
+<pre>
+# Change those for you own needs.
+K8S_SERVICE_IP         = 141.77.8.165
+MASTER_HOST            = 10.254.0.1
+MASTER_DNS_NAME        =
+MASTER_IP              =
+MASTER_LOADBALANCER_IP =
+</pre>
+
+Additional DNS addresses and hosts can be set for a hight availability deployment in @openssl_server.cnf@ configuration.
+
+<pre>
+[alt_names]
+DNS.1 = kubernetes
+DNS.2 = kubernetes.default
+DNS.3 = kubernetes.default.svc
+DNS.4 = kubernetes.default.svc.cluster.local
+IP.1 = ${K8S_SERVICE_IP}
+IP.2 = ${MASTER_HOST}
+# HA configuration
+#DNS.5 = ${MASTER_DNS_NAME}
+#IP.3 = ${MASTER_IP}
+#IP.4 = ${MASTER_LOADBALANCER_IP}
+</pre>
+
+h2. Usage
+
+h3. ./Makefile
+
+* @make@
+* @make run@
+
+Creates the root certificate authority.
+
+* @make clean@
+
+Deletes all created directories and files.
+
+* @make show@ Shows the root certificate.
+
+* @make worker@
+
+Creates a new worker certificate, needed arguments are @WORKER_IP@ and @WORKER_NAME@.
+
+h2. Generated Files
+
+|_.File|_.Description|
+|certs/|Directory of the signed certificates.|
+|certs/ca_cert.pem|The root CA certificate.|
+|certs/ca_chain_cert.pem|The intermediate CA chain certificate.|
+|certs/intermediate_cert.pem|The intermediate CA certificate.|
+|certs/ocsp.muellerpublic.de_cert.pem|The OCSP certificate.|
+|crl/|Directory of the certificate revocation lists.|
+|csr/|Directory of the certificate requests.|
+|passwords/|Directory of the private key passphrases.|
+|private/|Directory of the private keys.|
+|private/ca_key.pem|The root CA private key.|
+
+h2. License
+
+Licensed under a "Apache 2.0 License.":http://www.apache.org/licenses/LICENSE-2.0 Permissions beyond the scope of this license may be available at @erwin.mueller@deventm.org@ or @erwin.mueller@nttdata.com@.
