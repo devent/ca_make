@@ -18,7 +18,9 @@ SERVER_KEY := private/server_key.pem
 SERVER_KEY_INSECURE := private/server_key_insecure.pem
 SERVER_CERT := certs/server_cert.pem
 SERVER_CSR := csr/server_csr.pem
-SERVER_CERT_DAYS := 365
+SERVER_CERT_DAYS := 3650
+# Worker certificate.
+WORKER_CERT_DAYS := 3650
 # Tools.
 OPENSSL := /usr/bin/openssl
 PWGEN := /usr/bin/pwgen
@@ -55,7 +57,7 @@ worker: ##@targets Creates a new worker certificate, needed arguments are WORKER
 	&& $(OPENSSL) rsa -in $$WORKER_KEY -out $$WORKER_KEY_INSECURE \
 	&& WORKER_IP=$(WORKER_IP) $(OPENSSL) req -config ./openssl_worker.cnf -key $$WORKER_KEY_INSECURE -new -sha256 -out $$WORKER_CSR -subj "/CN=$(WORKER_NAME)" \
 	&& $(PRINT_ROOT_KEY_PASS) \
-	&& WORKER_IP=$(WORKER_IP) $(OPENSSL) ca -config ./openssl_worker.cnf -create_serial -extensions v3_req -days $(SERVER_CERT_DAYS) -notext -md sha256 -in $$WORKER_CSR -out $$WORKER_CERT
+	&& WORKER_IP=$(WORKER_IP) $(OPENSSL) ca -config ./openssl_worker.cnf -create_serial -extensions v3_req -days $(WORKER_CERT_DAYS) -notext -md sha256 -in $$WORKER_CSR -out $$WORKER_CERT
 
 $(OPENSSL):
 	sudo apt-get install -y openssl
