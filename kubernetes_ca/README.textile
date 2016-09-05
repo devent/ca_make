@@ -91,9 +91,6 @@ h2. Generated Files
 |_.File|_.Description|
 |certs/|Directory of the signed certificates.|
 |certs/ca_cert.pem|The root CA certificate.|
-|certs/ca_chain_cert.pem|The intermediate CA chain certificate.|
-|certs/intermediate_cert.pem|The intermediate CA certificate.|
-|certs/ocsp.muellerpublic.de_cert.pem|The OCSP certificate.|
 |crl/|Directory of the certificate revocation lists.|
 |csr/|Directory of the certificate requests.|
 |passwords/|Directory of the private key passphrases.|
