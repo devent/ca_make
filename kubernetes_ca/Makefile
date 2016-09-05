@@ -35,7 +35,7 @@ ca: setup $(ROOT_KEY) $(CA_CERT) $(SERIAL) ##@targets Creates a new root certifi
 server: $(SERVER_KEY) $(SERVER_CSR) $(SERVER_CERT) ##@targets Creates a new API server certificate.
 
 clean: ##@targets Deletes all created directories and files.
-	rm -rf $(DIRS) $(FILES) $(SERIAL) index.txt.attr index.txt.attr.old index.txt.old crlnumber
+	rm -rf $(DIRS) $(FILES) $(SERIAL) serial.old index.txt.attr index.txt.attr.old index.txt.old crlnumber
 
 show: ##@targets Shows the root certificate.
 	$(OPENSSL) x509 -noout -text -in $(CA_CERT)
@@ -52,9 +52,10 @@ worker: ##@targets Creates a new worker certificate, needed arguments are WORKER
 	&& $(PWGEN) 128 1 > "$$WORKER_KEY_PASS" \
 	&& $(call printInfo2, "$$WORKER_KEY_PASS: `cat $$WORKER_KEY_PASS`") \
 	&& $(OPENSSL) genrsa -aes256 -out $$WORKER_KEY 2048 \
-	&& $(OPENSSL) rsa -in $(WORKER_KEY) -out $(WORKER_KEY_INSECURE) \
+	&& $(OPENSSL) rsa -in $$WORKER_KEY -out $$WORKER_KEY_INSECURE \
 	&& WORKER_IP=$(WORKER_IP) $(OPENSSL) req -config ./openssl_worker.cnf -key $$WORKER_KEY_INSECURE -new -sha256 -out $$WORKER_CSR -subj "/CN=$(WORKER_NAME)" \
-	&& WORKER_IP=$(WORKER_IP) $(OPENSSL) ca -config ./openssl_worker.cnf -create_serial -extensions v3_req -days $(SERVER_CERT_DAYS) -notext -md sha256 -in $(WORKER_CSR) -out $(WORKER_CERT)
+	&& $(PRINT_ROOT_KEY_PASS) \
+	&& WORKER_IP=$(WORKER_IP) $(OPENSSL) ca -config ./openssl_worker.cnf -create_serial -extensions v3_req -days $(SERVER_CERT_DAYS) -notext -md sha256 -in $$WORKER_CSR -out $$WORKER_CERT
 
 $(OPENSSL):
 	sudo apt-get install -y openssl
