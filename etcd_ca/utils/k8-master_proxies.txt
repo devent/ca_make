@@ -1,0 +1,8 @@
+export http_proxy="http://proxy.de.softlab.net:8080"
+export https_proxy="http://proxy.de.softlab.net:8080"
+export ftp_proxy="http://proxy.de.softlab.net:8080"
+export HTTP_PROXY="http://proxy.de.softlab.net:8080"
+export HTTPS_PROXY="http://proxy.de.softlab.net:8080"
+export FTP_PROXY="http://proxy.de.softlab.net:8080"
+export no_proxy="127.0.0.1,localhost,k8-master.muellerpublic.de,141.77.8.165,41.77.8.166,k8-node-0.muellerpublic.de"
+export NO_PROXY="$no_proxy"
