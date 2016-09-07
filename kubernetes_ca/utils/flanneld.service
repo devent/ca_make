@@ -1,0 +1,16 @@
+[Unit]
+Description=Kubernetes Kubelet
+Documentation=https://github.com/kubernetes/kubernetes
+Requires=docker.service
+After=docker.service
+
+[Service]
+ExecStart=/usr/bin/kubelet \
+--etcd-endpoints=https://127.0.0.1:4001 \
+--ip-masq \
+--iface=141.77.8.165
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

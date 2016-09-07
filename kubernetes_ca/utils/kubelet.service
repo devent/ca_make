@@ -1,0 +1,21 @@
+[Unit]
+Description=Kubernetes Kubelet
+Documentation=https://github.com/kubernetes/kubernetes
+Requires=docker.service
+After=docker.service
+
+[Service]
+ExecStart=/usr/bin/kubelet \
+--allow-privileged=true \
+--logtostderr=true \
+--hostname-override=141.77.8.165  \
+--api-servers=http://141.77.8.165:8080  \
+--logtostderr=true  \
+--cluster-dns=192.168.3.10  \
+--cluster-domain=cluster.local  \
+--config=/etc/kubernetes/manifests
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
