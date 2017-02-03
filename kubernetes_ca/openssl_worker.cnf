@@ -9,8 +9,9 @@ HOME                   = .
 RANDFILE               = $ENV::HOME/.rnd
 
 # Change those for you own needs.
-K8S_SERVICE_IP         = 141.77.8.165
-MASTER_HOST            = 10.254.0.1
+K8S_SERVICE_IP         = 10.254.0.1
+MASTER_HOST            = 185.24.220.41
+# For HA configuration.
 MASTER_DNS_NAME        =
 MASTER_IP              =
 MASTER_LOADBALANCER_IP =

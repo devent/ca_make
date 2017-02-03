@@ -9,8 +9,9 @@ HOME                   = .
 RANDFILE               = $ENV::HOME/.rnd
 
 # Change those for you own needs.
-K8S_SERVICE_IP         = 141.77.8.165
-MASTER_HOST            = 10.254.0.1
+K8S_SERVICE_IP         = 10.254.0.1
+MASTER_HOST            = 185.24.220.41
+# For HA configuration.
 MASTER_DNS_NAME        =
 MASTER_IP              =
 MASTER_LOADBALANCER_IP =
@@ -101,9 +102,12 @@ DNS.1 = kubernetes
 DNS.2 = kubernetes.default
 DNS.3 = kubernetes.default.svc
 DNS.4 = kubernetes.default.svc.cluster.local
+DNS.5 = andrea-master
+DNS.6 = andrea-master.muellerpublic
+DNS.7 = andrea-master.muellerpublic.de
 IP.1 = ${K8S_SERVICE_IP}
 IP.2 = ${MASTER_HOST}
 # HA configuration
-#DNS.5 = ${MASTER_DNS_NAME}
+#DNS.8 = ${MASTER_DNS_NAME}
 #IP.3 = ${MASTER_IP}
 #IP.4 = ${MASTER_LOADBALANCER_IP}

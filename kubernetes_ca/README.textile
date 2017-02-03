@@ -38,6 +38,9 @@ The @openssl_server.cnf@ and @openssl_worker.cnf@ file contains the configuratio
 
 * @K8S_SERVICE_IP@, the IP address of the Kubernetes public server address;
 * @MASTER_HOST@, the IP address of the first Kubernetes node;
+
+For multiple master nodes in a HA configuration we also need those variables.
+
 * @MASTER_DNS_NAME@,
 * @MASTER_IP@,
 * @MASTER_LOADBALANCER_IP@, for HA setup.
