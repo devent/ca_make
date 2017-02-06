@@ -13,11 +13,16 @@ KEY_SIZE               = 2048
 KEY_COUNTRY            = DE
 KEY_PROVINCE           = BAVARIA
 KEY_CITY               = MUNICH
-KEY_ORG                = etcd-ca
+KEY_ORG                = ECTD-CA
 KEY_ORGUNIT            = ERWIN MUELLER Certificate Authority
-KEY_COMMON_NAME        = ERWIN MUELLER Root CA
+KEY_COMMON_NAME        = ERWIN MUELLER Etcd CA
 KEY_EMAIL              = admin@muellerpublic.de
-ETCD_SAN               = "IP:127.0.0.1"
+
+# Set the CRL distribution URL.
+CRL_URL                = URI:https://muellerpublic.de/etcd.crl.pem
+
+# Set the OCSP distribution URL.
+OCSP_URL               = OCSP;URI:http://ocsp.muellerpublic.de
 
 # Extra OBJECT IDENTIFIER info:
 #oid_file               = $ENV::HOME/.oid
@@ -66,7 +71,7 @@ certificate       = $dir/certs/ca_cert.pem
 
 # For certificate revocation lists.
 crlnumber         = $dir/crlnumber
-crl               = $dir/crl/ca_crl.pem
+crl               = $dir/crl/etcd_crl.pem
 crl_extensions    = crl_ext
 default_crl_days  = 30
 
@@ -77,10 +82,10 @@ name_opt          = ca_default
 cert_opt          = ca_default
 default_days      = 375
 preserve          = no
-policy            = policy_etcd
+policy            = policy_strict
 
 [ policy_strict ]
-# The root CA should only sign intermediate certificates that match.
+# The root CA should only sign certificates that match.
 # See the POLICY FORMAT section of `man ca`.
 countryName             = match
 stateOrProvinceName     = match
@@ -90,7 +95,7 @@ commonName              = supplied
 emailAddress            = optional
 
 [ policy_loose ]
-# Allow the intermediate CA to sign a more diverse range of certificates.
+# Allow the CA to sign a more diverse range of certificates.
 # See the POLICY FORMAT section of the `ca` man page.
 countryName             = optional
 stateOrProvinceName     = optional
@@ -100,25 +105,17 @@ organizationalUnitName  = optional
 commonName              = supplied
 emailAddress            = optional
 
-[ policy_etcd ]
-organizationName = optional
-commonName = supplied
-
 [ req ]
 # Options for the `req` tool (`man req`).
 default_bits        = 2048
 distinguished_name  = req_distinguished_name
 string_mask         = utf8only
-attributes          = req_attributes
-req_extensions      = etcd_client
 
 # SHA-1 is deprecated, so use SHA-2 instead.
 default_md          = sha256
 
 # Extension to add when the -x509 option is used.
 x509_extensions     = v3_ca
-
-[ req_attributes ]
 
 [ req_distinguished_name ]
 # See <https://en.wikipedia.org/wiki/Certificate_signing_request>.
@@ -145,23 +142,53 @@ emailAddress_default            = $ENV::KEY_EMAIL
 emailAddress_max                = 64
 
 [ v3_ca ]
-basicConstraints       = CA:TRUE
-keyUsage               = keyCertSign,cRLSign
-subjectKeyIdentifier   = hash
-
-[ etcd_client ]
-basicConstraints       = CA:FALSE
-extendedKeyUsage       = clientAuth
-keyUsage               = digitalSignature, keyEncipherment
-
-[ etcd_peer ]
-basicConstraints       = CA:FALSE
-extendedKeyUsage       = clientAuth, serverAuth
-keyUsage               = digitalSignature, keyEncipherment
-subjectAltName         = ${ENV::ETCD_SAN}
+# Extensions for a typical CA (`man x509v3_config`).
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer
+basicConstraints = critical, CA:true
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign
 
 [ etcd_server ]
-basicConstraints       = CA:FALSE
-extendedKeyUsage       = clientAuth, serverAuth
-keyUsage               = digitalSignature, keyEncipherment
-subjectAltName         = ${ENV::ETCD_SAN}
+# Extensions for server certificates (`man x509v3_config`).
+basicConstraints = CA:FALSE
+nsCertType = server
+nsComment = "OpenSSL Generated Server Certificate"
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer:always
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = clientAuth, serverAuth
+crlDistributionPoints = $ENV::CRL_URL
+authorityInfoAccess = $ENV::OCSP_URL
+subjectAltName = @alt_names
+
+[ etcd_client ]
+# Extensions for client certificates (`man x509v3_config`).
+basicConstraints        = CA:FALSE
+nsCertType              = client
+nsComment               = "OpenSSL Generated Client Certificate"
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid,issuer
+keyUsage                = digitalSignature, keyEncipherment
+extendedKeyUsage        = clientAuth
+
+[ etcd_peer ]
+basicConstraints        = CA:FALSE
+extendedKeyUsage        = clientAuth, serverAuth
+keyUsage                = digitalSignature, keyEncipherment
+subjectAltName          = @alt_names
+
+[ crl_ext ]
+# Extension for CRLs (`man x509v3_config`).
+authorityKeyIdentifier=keyid:always
+
+[ ocsp ]
+# Extension for OCSP signing certificates (`man ocsp`).
+basicConstraints = CA:FALSE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
+keyUsage = critical, digitalSignature
+extendedKeyUsage = critical, OCSPSigning
+
+[alt_names]
+IP.1 = 127.0.0.1
+IP.2 = 185.24.220.41

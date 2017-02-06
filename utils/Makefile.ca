@@ -7,8 +7,14 @@ SERVER_KEY=private/$(SERVER_NAME)_key.pem \
 && SERVER_KEY_PASS="passwords/`basename $$SERVER_KEY`.txt"
 endef
 
+# Sets the ca key size.
+ROOT_KEY_SIZE ?= 4096
+
 # Sets the server key size.
 SERVER_KEY_SIZE ?= 4096
+
+# Sets the client key size.
+CLIENT_KEY_SIZE ?= 4096
 
 _create_key:
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
@@ -26,4 +32,19 @@ _create_crt:
 	&& $(SERVER_ARGS) \
 	&& $(call printWarn, "Common name must be: $(SERVER_NAME)") \
 	&& $(call printInfo2, "$$SERVER_KEY_PASS: `cat $$SERVER_KEY_PASS`") \
-	&& $(OPENSSL) req $(OPENSSL_ARGS) -key $$SERVER_KEY -new -sha256 -out $$SERVER_CSR \
+	&& $(OPENSSL) req $(OPENSSL_ARGS) -key $$SERVER_KEY -new -sha256 -out $$SERVER_CSR
+
+_show_server: ##@targets Shows the server certificate. Needed arguments: SERVER_NAME.
+	$(call check_defined, SERVER_NAME, The server FQDN for the request)
+	$(OPENSSL) x509 -noout -text -in certs/$(SERVER_NAME)_cert.pem
+
+_verify_server: ##@targets Verifies the server certificate. Needed arguments: SERVER_NAME.
+	$(call check_defined, SERVER_NAME, The server FQDN for the request)
+	$(OPENSSL) verify -CAfile $(CA_CHAIN) certs/$(SERVER_NAME)_cert.pem
+
+_revoke_server: ##@targets Revokes the server certificate. Needed arguments: SERVER_NAME.
+	$(call check_defined, SERVER_NAME, The server FQDN for the request)
+	$(PRINT_ROOT_KEY_PASS)
+	$(OPENSSL) ca $(OPENSSL_ARGS) -revoke certs/$(SERVER_NAME)_cert.pem
+	$(MAKE) regenerate
+

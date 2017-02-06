@@ -1,64 +1,73 @@
 # Include utilities.
-include ../utils/Makefile.help
 include ../utils/Makefile.functions
+include ../utils/Makefile.help
+include ../utils/Makefile.ca
 # Misc.
 SHELL := /bin/bash
-CA_CERT_DAYS := 7300
+CA_CERT_DAYS := 3650
+SERVER_DAYS := 375
+OCSP_DAYS := 375
+OPENSSL_ARGS := -config ./openssl.cnf
 # Files and directories.
 DIRS := certs csr crl newcerts private passwords
 FILES := index.txt
 SERIAL := serial
+CRL_NUMBER := crlnumber
 CONFIG_FILE := openssl.cnf
 ROOT_KEY := private/ca_key.pem
-ROOT_KEY_INSECURE := private/ca_key_insecure.pem
 CA_CERT := certs/ca_cert.pem
-# Server certificate.
-SERVER_CERT_DAYS := 3650
 # Client certificate.
-CLIENT_CERT_DAYS := 3650
+CLIENT_CERT_DAYS := 365
 # Tools.
 OPENSSL := /usr/bin/openssl
 PWGEN := /usr/bin/pwgen
 # Makefile.
-.PHONY: run setup ca clean show
+.PHONY: run setup ca clean show verify regenerate show_crl server show_server verify_server revoke_server ocsp start_ocsp query_ocsp
 .DEFAULT_GOAL := run
 
-run: ca ##@default Creates the root certificate authority.
+run: ca ##@default Creates the intermediate certificate authority.
 
 setup: $(OPENSSL) $(DIRS) $(FILES)
 
-ca: setup $(ROOT_KEY) $(CA_CERT) $(SERIAL) ##@targets Creates a new root certificate authority.
+ca: setup $(ROOT_KEY) $(CA_CERT) $(SERIAL) ##@targets Creates a new intermediate certificate authority.
 
 clean: ##@targets Deletes all created directories and files.
-	rm -rf $(DIRS) $(FILES) $(SERIAL) serial.old index.txt.attr index.txt.attr.old index.txt.old crlnumber
+	rm -rf $(DIRS) $(FILES) $(SERIAL) index.txt.attr index.txt.attr.old index.txt.old crlnumber *.old
 
-show: ##@targets Shows the root certificate.
-	$(OPENSSL) x509 -noout -text -in $(CA_CERT)
-
-server: ##@targets Creates a new etcd server certificate, needed arguments are ETCD_SAN and ETCD_NAME.
-	$(call check_defined, ETCD_SAN, The server SAN IP address(es) for the request)
-	$(call check_defined, ETCD_NAME, The server FQDN for the request)
+server: _create_key _create_crt ##@targets Creates a new server certificate. Needed arguments SERVER_NAME.
 	set $(SET_FLAG) \
-	&& $(call ETCD_VARS,$(ETCD_NAME)) \
-	&& $(PWGEN) 128 1 > "$$ETCD_KEY_PASS" \
-	&& $(call printInfo2, "$$ETCD_KEY_PASS: `cat $$ETCD_KEY_PASS`") \
-	&& $(OPENSSL) genrsa -aes256 -out $$ETCD_KEY 2048 \
-	&& $(OPENSSL) rsa -in $$ETCD_KEY -out $$ETCD_KEY_INSECURE \
-	&& $(call printWarn, "Common name must be: $(ETCD_NAME)") \
-	&& ETCD_SAN="$(ETCD_SAN)" $(OPENSSL) req -config ./openssl.cnf -key $$ETCD_KEY_INSECURE -new -sha256 -out $$ETCD_CSR \
+	&& $(SERVER_ARGS) \
+	&& $(call printInfo1, "Signing '$$SERVER_CSR'...") \
 	&& $(PRINT_ROOT_KEY_PASS) \
-	&& ETCD_SAN="$(ETCD_SAN)" $(OPENSSL) ca -config ./openssl.cnf -create_serial -extensions etcd_server -days $(SERVER_CERT_DAYS) -notext -md sha256 -in $$ETCD_CSR -out $$ETCD_CERT
+	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions etcd_server -days $(SERVER_DAYS) -notext -md sha256 -in $$SERVER_CSR -out $$SERVER_CERT
 
-client: ##@targets Creates a new etcd client certificate.
+show_server: ##@targets Shows the server certificate.
+	$(call check_defined, SERVER_NAME, The server FQDN for the request)
+	$(OPENSSL) x509 -noout -text -in certs/$(SERVER_NAME)_cert.pem
+
+show_server: _show_server ##@targets Shows the server certificate. Needed arguments: SERVER_NAME.
+
+verify_server: _verify_server ##@targets Verifies the server certificate. Needed arguments: SERVER_NAME.
+
+revoke_server: _revoke_server ##@targets Revokes the server certificate. Needed arguments: SERVER_NAME.
+
+client: ##@targets Creates a new client certificate, needed argument CLIENT_NAME.
+	$(call check_defined, CLIENT_NAME, The client name for the request)
 	set $(SET_FLAG) \
-	&& $(call ETCD_VARS,client) \
-	&& $(PWGEN) 128 1 > "$$ETCD_KEY_PASS" \
-	&& $(call printInfo2, "$$ETCD_KEY_PASS: `cat $$ETCD_KEY_PASS`") \
-	&& $(OPENSSL) genrsa -aes256 -out $$ETCD_KEY 2048 \
-	&& $(OPENSSL) rsa -in $$ETCD_KEY -out $$ETCD_KEY_INSECURE \
-	&& ETCD_SAN="$(ETCD_SAN)" $(OPENSSL) req -config ./openssl.cnf -key $$ETCD_KEY_INSECURE -new -sha256 -out $$ETCD_CSR -subj "/CN=etcd-client" \
+	&& CLIENT_KEY=private/$(CLIENT_NAME)_key.pem \
+	&& CLIENT_KEY_INSECURE=private/$(CLIENT_NAME)_key_insecure.pem \
+	&& CLIENT_CSR=csr/$(CLIENT_NAME)_csr.pem \
+	&& CLIENT_CERT=certs/$(CLIENT_NAME)_cert.pem \
+	&& CLIENT_KEY_PASS="passwords/`basename $$CLIENT_KEY`.txt" \
+	&& $(PWGEN) 128 1 > "$$CLIENT_KEY_PASS" \
+	&& $(call printInfo2, "$$CLIENT_KEY_PASS: `cat $$CLIENT_KEY_PASS`") \
+	&& $(OPENSSL) genrsa -aes256 -out $$CLIENT_KEY $(CLIENT_KEY_SIZE) \
+	&& $(OPENSSL) rsa -in $$CLIENT_KEY -out $$CLIENT_KEY_INSECURE \
+	&& $(call printWarn, "Common name must be: $(CLIENT_NAME)") \
+	&& $(OPENSSL) req -config ./openssl.cnf -key $$CLIENT_KEY_INSECURE -new -sha256 -out $$CLIENT_CSR \
+	&& $(call printInfo1, "Signing `echo $$CLIENT_CSR`...") \
 	&& $(PRINT_ROOT_KEY_PASS) \
-	&& ETCD_SAN="$(ETCD_SAN)" $(OPENSSL) ca -config ./openssl.cnf -create_serial -extensions etcd_client -days $(CLIENT_CERT_DAYS) -notext -md sha256 -in $$ETCD_CSR -out $$ETCD_CERT
+	&& $(OPENSSL) ca -config ./openssl.cnf -create_serial -extensions etcd_client -policy policy_loose -days $(CLIENT_CERT_DAYS) -notext -md sha256 -in $$CLIENT_CSR -out $$CLIENT_CERT
 
 $(OPENSSL):
 	sudo apt-get install -y openssl
@@ -78,27 +87,13 @@ $(SERIAL):
 $(ROOT_KEY):
 	set $(SET_FLAG) \
 	&& ROOT_KEY_PASS="passwords/`basename $(ROOT_KEY)`.txt" \
+	&& ROOT_KEY_INSECURE="private/`basename $(ROOT_KEY) .pem`_insecure.pem" \
 	&& $(PWGEN) 128 1 > "$$ROOT_KEY_PASS" \
 	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`") \
-	&& $(OPENSSL) genrsa -aes256 -out $(ROOT_KEY) 4096 \
+	&& $(OPENSSL) genrsa -aes256 -out $(ROOT_KEY) $(ROOT_KEY_SIZE) \
 	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`") \
-	&& $(OPENSSL) rsa -in $(ROOT_KEY) -out $(ROOT_KEY_INSECURE)
+	&& $(OPENSSL) rsa -in $(ROOT_KEY) -out $$ROOT_KEY_INSECURE
 
 $(CA_CERT):
-	set $(SET_FLAG) \
-	&& $(OPENSSL) req -config ./openssl.cnf -key $(ROOT_KEY) -new -x509 -days $(CA_CERT_DAYS) -sha256 -extensions v3_ca -out $(CA_CERT)
-	
-# Sets the certificate variables.
-#
-# Params:
-#   1. The server name.
-define ETCD_VARS =
-ETCD_KEY=private/$(1)_key.pem \
-&& ETCD_KEY_INSECURE=private/$(1)_key_insecure.pem \
-&& ETCD_CSR=csr/$(1)_csr.pem \
-&& ETCD_CERT=certs/$(1)_cert.pem \
-&& ETCD_KEY_PASS="passwords/`basename $$ETCD_KEY`.txt" \
-&& if [ -f "$$ETCD_KEY" -a -f "$$ETCD_CERT" ]; then \
-$(call printError, $$ETCD_CERT already exists.) \
-&& exit 1; fi
-endef
+	$(call printInfo1, "Default values can be used.")
+	$(OPENSSL) req $(OPENSSL_ARGS) -key $(ROOT_KEY) -new -x509 -days $(CA_CERT_DAYS) -sha256 -extensions v3_ca -out $(CA_CERT)

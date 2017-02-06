@@ -57,19 +57,11 @@ server: _create_key _create_crt ##@targets Creates a new server certificate.
 	&& $(PRINT_ROOT_KEY_PASS) \
 	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions server_cert -days $(SERVER_DAYS) -notext -md sha256 -in $$SERVER_CSR -out $$SERVER_CERT
 
-show_server: ##@targets Shows the server certificate.
-	$(call check_defined, SERVER_NAME, The server FQDN for the request)
-	$(OPENSSL) x509 -noout -text -in certs/$(SERVER_NAME)_cert.pem
+show_server: _show_server ##@targets Shows the server certificate. Needed arguments: SERVER_NAME.
 
-verify_server: ##@targets Verifies the server certificate.
-	$(call check_defined, SERVER_NAME, The server FQDN for the request)
-	$(OPENSSL) verify -CAfile $(CA_CHAIN) certs/$(SERVER_NAME)_cert.pem
+verify_server: _verify_server ##@targets Verifies the server certificate. Needed arguments: SERVER_NAME.
 
-revoke_server: ##@targets Revokes the server certificate.
-	$(call check_defined, SERVER_NAME, The server FQDN for the request)
-	$(PRINT_ROOT_KEY_PASS)
-	$(OPENSSL) ca $(OPENSSL_ARGS) -revoke certs/$(SERVER_NAME)_cert.pem
-	$(MAKE) regenerate
+revoke_server: _revoke_server ##@targets Revokes the server certificate. Needed arguments: SERVER_NAME.
 
 ocsp: ##@targets Creates the OCSP cryptographic pair.
 	$(call check_defined, OCSP_NAME, The OCSP server FQDN)
