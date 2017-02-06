@@ -1,0 +1,2 @@
+V	180215100434Z		89BC134A749A1457	unknown	/C=DE/ST=BAVARIA/O=ECTD-CA/OU=ERWIN MUELLER Certificate Authority/CN=etcd-0.muellerpublic.de/emailAddress=admin@muellerpublic.de
+V	180205103522Z		89BC134A749A1458	unknown	/C=DE/ST=BAVARIA/L=MUNICH/O=Custom/OU=Custom Client/CN=etcd-client-0/emailAddress=admin@muellerpublic.de
