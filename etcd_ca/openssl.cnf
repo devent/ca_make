@@ -17,6 +17,7 @@ KEY_ORG                = ECTD-CA
 KEY_ORGUNIT            = ERWIN MUELLER Certificate Authority
 KEY_COMMON_NAME        = ERWIN MUELLER Etcd CA
 KEY_EMAIL              = admin@muellerpublic.de
+ETCD_SAN               = "IP:127.0.0.1"
 
 # Set the CRL distribution URL.
 CRL_URL                = URI:https://muellerpublic.de/etcd.crl.pem
@@ -150,16 +151,16 @@ keyUsage = critical, digitalSignature, cRLSign, keyCertSign
 
 [ etcd_server ]
 # Extensions for server certificates (`man x509v3_config`).
-basicConstraints = CA:FALSE
-nsCertType = server
-nsComment = "OpenSSL Generated Server Certificate"
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid,issuer:always
-keyUsage = digitalSignature, keyEncipherment
-extendedKeyUsage = clientAuth, serverAuth
-crlDistributionPoints = $ENV::CRL_URL
-authorityInfoAccess = $ENV::OCSP_URL
-subjectAltName = @alt_names
+basicConstraints        = CA:FALSE
+nsCertType              = server
+nsComment               = "OpenSSL Generated Server Certificate"
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid,issuer:always
+keyUsage                = digitalSignature, keyEncipherment
+extendedKeyUsage        = clientAuth, serverAuth
+crlDistributionPoints   = $ENV::CRL_URL
+authorityInfoAccess     = $ENV::OCSP_URL
+subjectAltName          = ${ENV::ETCD_SAN}
 
 [ etcd_client ]
 # Extensions for client certificates (`man x509v3_config`).
@@ -175,7 +176,7 @@ extendedKeyUsage        = clientAuth
 basicConstraints        = CA:FALSE
 extendedKeyUsage        = clientAuth, serverAuth
 keyUsage                = digitalSignature, keyEncipherment
-subjectAltName          = @alt_names
+subjectAltName          = ${ENV::ETCD_SAN}
 
 [ crl_ext ]
 # Extension for CRLs (`man x509v3_config`).
@@ -188,7 +189,3 @@ subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid,issuer
 keyUsage = critical, digitalSignature
 extendedKeyUsage = critical, OCSPSigning
-
-[alt_names]
-IP.1 = 127.0.0.1
-IP.2 = 185.24.220.41

@@ -34,8 +34,14 @@ ca: setup $(ROOT_KEY) $(CA_CERT) $(SERIAL) ##@targets Creates a new intermediate
 clean: ##@targets Deletes all created directories and files.
 	rm -rf $(DIRS) $(FILES) $(SERIAL) index.txt.attr index.txt.attr.old index.txt.old crlnumber *.old
 
-server: _create_key _create_crt ##@targets Creates a new server certificate. Needed arguments SERVER_NAME.
+server: ##@targets Creates a new server certificate. Needed arguments SERVER_NAME.
 	set $(SET_FLAG) \
+	&& ETCD_SAN="$(ETCD_SAN)" \
+	&& if [ -z "$$ETCD_SAN" ]; then $(call printInfo1, "No SANs set in ETCD_SAN"); fi \
+	&& $(MAKE) _create_key \
+	&& $(MAKE) _create_crt
+	set $(SET_FLAG) \
+	&& ETCD_SAN="$(ETCD_SAN)" \
 	&& $(SERVER_ARGS) \
 	&& $(call printInfo1, "Signing '$$SERVER_CSR'...") \
 	&& $(PRINT_ROOT_KEY_PASS) \
