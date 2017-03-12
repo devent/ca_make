@@ -16,6 +16,10 @@ SERVER_KEY_SIZE ?= 4096
 # Sets the client key size.
 CLIENT_KEY_SIZE ?= 4096
 
+# Tools.
+OPENSSL := /usr/bin/openssl
+PWGEN := /usr/bin/pwgen
+
 _create_key:
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
 	set $(SET_FLAG) \
@@ -25,6 +29,7 @@ _create_key:
 	&& $(OPENSSL) genrsa -aes256 -out $$SERVER_KEY $(SERVER_KEY_SIZE) \
 	&& $(call printInfo2, "$$SERVER_KEY_PASS: `cat $$SERVER_KEY_PASS`") \
 	&& $(OPENSSL) rsa -in $$SERVER_KEY -out $$SERVER_KEY_INSECURE
+.PHONY: _create_key
 
 _create_crt:
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
@@ -33,18 +38,67 @@ _create_crt:
 	&& $(call printWarn, "Common name must be: $(SERVER_NAME)") \
 	&& $(call printInfo2, "$$SERVER_KEY_PASS: `cat $$SERVER_KEY_PASS`") \
 	&& $(OPENSSL) req $(OPENSSL_ARGS) -key $$SERVER_KEY -new -sha256 -out $$SERVER_CSR
+.PHONY: _create_crt
 
 _show_server: ##@targets Shows the server certificate. Needed arguments: SERVER_NAME.
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
 	$(OPENSSL) x509 -noout -text -in certs/$(SERVER_NAME)_cert.pem
+.PHONY: _show_server
 
 _verify_server: ##@targets Verifies the server certificate. Needed arguments: SERVER_NAME.
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
 	$(OPENSSL) verify -CAfile $(CA_CHAIN) certs/$(SERVER_NAME)_cert.pem
+.PHONY: _verify_server
 
 _revoke_server: ##@targets Revokes the server certificate. Needed arguments: SERVER_NAME.
 	$(call check_defined, SERVER_NAME, The server FQDN for the request)
 	$(PRINT_ROOT_KEY_PASS)
 	$(OPENSSL) ca $(OPENSSL_ARGS) -revoke certs/$(SERVER_NAME)_cert.pem
 	$(MAKE) regenerate
+.PHONY: _revoke_server
+
+_ocsp:
+	$(call check_defined, OCSP_NAME, The OCSP server FQDN)
+	set $(SET_FLAG) \
+	&& SERVER_KEY=private/$(OCSP_NAME)_key.pem \
+	&& SERVER_CSR=csr/$(OCSP_NAME)_csr.pem \
+	&& SERVER_CERT=certs/$(OCSP_NAME)_cert.pem \
+	&& SERVER_KEY_PASS="passwords/`basename $$SERVER_KEY`.txt" \
+	&& $(PWGEN) 128 1 > "$$SERVER_KEY_PASS" \
+	&& $(call printInfo2, "$$SERVER_KEY_PASS: `cat $$SERVER_KEY_PASS`") \
+	&& $(OPENSSL) genrsa -aes256 -out $$SERVER_KEY 4096 \
+	&& $(call printWarn, "Common name must be: $(OCSP_NAME)") \
+	&& $(OPENSSL) req $(OPENSSL_ARGS) -key $$SERVER_KEY -new -sha256 -out $$SERVER_CSR \
+	&& $(PRINT_ROOT_KEY_PASS) \
+	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions ocsp -days $(OCSP_DAYS) -notext -md sha256 -in $$SERVER_CSR -out $$SERVER_CERT \
+	&& $(OPENSSL) x509 -noout -text -in $$SERVER_CERT
+.PHONY: _ocsp
+
+_start-ocsp:
+	$(call check_defined, OCSP_NAME, The OCSP server FQDN)
+	set $(SET_FLAG) \
+	&& SERVER_KEY=private/$(OCSP_NAME)_key.pem \
+	&& SERVER_CERT=certs/$(OCSP_NAME)_cert.pem \
+	&& $(call printServerKeyPass, "$$SERVER_KEY") \
+	&& $(OPENSSL) ocsp -port 127.0.0.1:2560 -text -sha256 -index index.txt -CA $(CA_CHAIN) -rkey $$SERVER_KEY -rsigner $$SERVER_CERT -nrequest 1
+.PHONY: _start-ocsp
+
+_query-ocsp:
+	$(call check_defined, SERVER_NAME, The server FQDN)
+	set $(SET_FLAG) \
+	&& SERVER_CERT=certs/$(SERVER_NAME)_cert.pem \
+	&& openssl ocsp -CAfile $(CA_CHAIN) -url http://127.0.0.1:2560 -resp_text -issuer $(CA_CERT) -cert $$SERVER_CERT
+.PHONY: _query-ocsp
+
+$(OPENSSL):
+	set $(SET_FLAG) \
+	&& if ! which openssl; then \
+	sudo apt-get install -y openssl; \
+	fi
+
+$(PWGEN):
+	set $(SET_FLAG) \
+	&& if ! which pwgen; then \
+	sudo apt-get install -y pwgen; \
+	fi
 

@@ -14,9 +14,9 @@ FILES := index.txt
 SERIAL := serial
 CRL_NUMBER := crlnumber
 CONFIG_FILE := openssl.cnf
-ROOT_KEY := private/intermediate_key.pem
-CA_CSR := csr/intermediate_csr.pem
-CA_CERT := certs/intermediate_cert.pem
+ROOT_KEY := private/docker_key.pem
+CA_CSR := csr/docker_csr.pem
+CA_CERT := certs/docker_cert.pem
 CA_CHAIN := certs/ca_chain_cert.pem
 # Tools.
 OPENSSL := /usr/bin/openssl
@@ -24,36 +24,36 @@ PWGEN := /usr/bin/pwgen
 # Makefile.
 .DEFAULT_GOAL := run
 
-run: ca ##@default Creates the intermediate certificate authority.
+run: ca ##@default Creates the docker certificate authority.
 .PHONY: run
 
 setup: $(OPENSSL) $(DIRS) $(FILES)
 .PHONY: setup
 
-ca: setup $(ROOT_KEY) $(CA_CSR) $(CA_CERT) $(CA_CHAIN) $(SERIAL) $(CRL_NUMBER) ##@targets Creates a new intermediate certificate authority.
+ca: setup $(ROOT_KEY) $(CA_CSR) $(CA_CERT) $(CA_CHAIN) $(SERIAL) $(CRL_NUMBER) ##@targets Creates a new docker registry certificate authority.
 .PHONY: ca
 
 clean: ##@targets Deletes all created directories and files.
 	rm -rf $(DIRS) $(FILES) $(SERIAL) index.txt.attr index.txt.attr.old index.txt.old crlnumber *.old
 .PHONY: clean
 
-show: ##@targets Shows the intermediate certificate.
+show: ##@targets Shows the docker certificate.
 	$(OPENSSL) x509 -noout -text -in $(CA_CERT)
 .PHONY: show
 
-verify: ##@targets Verifies the intermediate certificate against the root certificate.
+verify: ##@targets Verifies the docker certificate against the intermediate certificate.
 	set $(SET_FLAG) \
-	&& cd ../root \
-	&& $(OPENSSL) verify -CAfile certs/ca_cert.pem ../intermediate/$(CA_CERT)
+	&& cd ../intermediate \
+	&& $(OPENSSL) verify -CAfile certs/ca_chain_cert.pem ../docker_registry/$(CA_CERT)
 .PHONY: verify
 
 regenerate: ##@targets Regenerates the certificate revocation list.
 	$(PRINT_ROOT_KEY_PASS)
-	$(OPENSSL) ca $(OPENSSL_ARGS) -gencrl -out crl/intermediate.crl.pem
+	$(OPENSSL) ca $(OPENSSL_ARGS) -gencrl -out crl/docker.crl.pem
 .PHONY: regenerate
 
 show-crl: ##@targets Shows the certificate revocation list.
-	$(OPENSSL) crl -in crl/intermediate.crl.pem -noout -text
+	$(OPENSSL) crl -in crl/docker.crl.pem -noout -text
 .PHONY: show-crl
 
 server: _create_key _create_crt ##@targets Creates a new server certificate.
@@ -108,10 +108,10 @@ $(CA_CSR):
 
 $(CA_CERT):
 	set $(SET_FLAG) \
-	&& cd ../root \
-	&& ROOT_KEY_PASS="passwords/ca_key.pem.txt" \
+	&& cd ../intermediate \
+	&& ROOT_KEY_PASS="passwords/intermediate_key.pem.txt" \
 	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`") \
-	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions v3_intermediate_ca -days $(CA_CERT_DAYS) -notext -md sha256 -in ../intermediate/$(CA_CSR) -out ../intermediate/$(CA_CERT)
+	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions v3_intermediate_ca -days $(CA_CERT_DAYS) -notext -md sha256 -in ../docker_registry/$(CA_CSR) -out ../docker_registry/$(CA_CERT)
 
 $(CA_CHAIN):
-	cat $(CA_CERT) ../root/certs/ca_cert.pem > $(CA_CHAIN)
+	cat $(CA_CERT) ../intermediate/certs/intermediate_cert.pem ../root/certs/ca_cert.pem > $(CA_CHAIN)

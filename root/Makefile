@@ -13,34 +13,31 @@ SERIAL := serial
 CONFIG_FILE := openssl.cnf
 ROOT_KEY := private/ca_key.pem
 CA_CERT := certs/ca_cert.pem
-# Tools.
-OPENSSL := /usr/bin/openssl
-PWGEN := /usr/bin/pwgen
 # Makefile.
-.PHONY: run setup ca clean show
 .DEFAULT_GOAL := run
 
 run: ca ##@default Creates the root certificate authority.
+.PHONY: run
 
 setup: $(OPENSSL) $(DIRS) $(FILES)
+.PHONY: setup
 
 ca: setup $(ROOT_KEY) $(CA_CERT) $(SERIAL) ##@targets Creates a new root certificate authority.
+.PHONY: ca
 
 clean: ##@targets Deletes all created directories and files.
 	rm -rf $(DIRS) $(FILES) $(SERIAL) index.txt.attr index.txt.attr.old index.txt.old crlnumber
+.PHONY: clean
 
 show: ##@targets Shows the root certificate.
 	$(OPENSSL) x509 -noout -text -in $(CA_CERT)
+.PHONY: show
 
 create_key: _create_key ##@targets Creates a new certificate key. Optionally, the key size can be specified by setting SERVER_KEY_SIZE.
+.PHONY: create_key
 
 create_crt: _create_crt ##@targets Creates a new certificate signing request.
-
-$(OPENSSL):
-	sudo apt-get install -y openssl
-
-$(PWGEN):
-	sudo apt-get install -y pwgen
+.PHONY: create_crt
 
 $(DIRS):
 	mkdir -p $(DIRS)
