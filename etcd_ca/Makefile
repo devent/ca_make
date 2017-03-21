@@ -4,9 +4,9 @@ include ../utils/Makefile.help
 include ../utils/Makefile.ca
 # Misc.
 SHELL := /bin/bash
-CA_CERT_DAYS := 365
-SERVER_DAYS := 375
-OCSP_DAYS := 375
+CA_CERT_DAYS := 3650
+SERVER_DAYS := 365
+OCSP_DAYS := 365
 OPENSSL_ARGS := -config ./openssl.cnf
 # Files and directories.
 DIRS := certs csr crl newcerts private passwords
@@ -124,7 +124,7 @@ $(ROOT_KEY):
 	&& ROOT_KEY_PASS="passwords/`basename $(ROOT_KEY)`.txt" \
 	&& $(PWGEN) 128 1 > "$$ROOT_KEY_PASS" \
 	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`") \
-	&& $(OPENSSL) genrsa -aes256 -out $(ROOT_KEY) 4096
+	&& $(OPENSSL) genrsa -aes256 -out $(ROOT_KEY) $(ROOT_KEY_SIZE)
 
 $(CA_CSR):
 	$(PRINT_ROOT_KEY_PASS)

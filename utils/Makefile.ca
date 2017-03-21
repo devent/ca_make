@@ -66,7 +66,7 @@ _ocsp:
 	&& SERVER_KEY_PASS="passwords/`basename $$SERVER_KEY`.txt" \
 	&& $(PWGEN) 128 1 > "$$SERVER_KEY_PASS" \
 	&& $(call printInfo2, "$$SERVER_KEY_PASS: `cat $$SERVER_KEY_PASS`") \
-	&& $(OPENSSL) genrsa -aes256 -out $$SERVER_KEY 4096 \
+	&& $(OPENSSL) genrsa -aes256 -out $$SERVER_KEY $(SERVER_KEY_SIZE) \
 	&& $(call printWarn, "Common name must be: $(OCSP_NAME)") \
 	&& $(OPENSSL) req $(OPENSSL_ARGS) -key $$SERVER_KEY -new -sha256 -out $$SERVER_CSR \
 	&& $(PRINT_ROOT_KEY_PASS) \
