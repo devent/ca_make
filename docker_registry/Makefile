@@ -41,10 +41,11 @@ show: ##@targets Shows the docker certificate.
 	$(OPENSSL) x509 -noout -text -in $(CA_CERT)
 .PHONY: show
 
-verify: ##@targets Verifies the docker certificate against the intermediate certificate.
+verify: ##@targets Verifies the docker CA certificate against the intermediate certificate.
 	set $(SET_FLAG) \
+	&& current_pwd=$$PWD \
 	&& cd ../intermediate \
-	&& $(OPENSSL) verify -CAfile certs/ca_chain_cert.pem ../docker_registry/$(CA_CERT)
+	&& $(OPENSSL) verify -CAfile certs/ca_chain_cert.pem "$$current_pwd/$(CA_CERT)"
 .PHONY: verify
 
 regenerate: ##@targets Regenerates the certificate revocation list.

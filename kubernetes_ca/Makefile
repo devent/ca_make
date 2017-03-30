@@ -52,6 +52,13 @@ show: ##@targets Shows the root certificate.
 	$(OPENSSL) x509 -noout -text -in $(CA_CERT)
 .PHONY: show
 
+verify: ##@targets Verifies the kubernetes CA certificate against the intermediate certificate.
+	set $(SET_FLAG) \
+	&& current_pwd=$$PWD \
+	&& cd ../intermediate \
+	&& $(OPENSSL) verify -CAfile certs/ca_chain_cert.pem "$$current_pwd/$(CA_CERT)"
+.PHONY: verify
+
 worker: ##@targets Creates a new worker certificate, needed arguments are WORKER_IP and WORKER_NAME.
 	$(call check_defined, WORKER_IP, The worker IP address for the request)
 	$(call check_defined, WORKER_NAME, The worker FQDN for the request)
