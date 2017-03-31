@@ -6,6 +6,7 @@ include ../utils/Makefile.ca
 SHELL := /bin/bash
 CA_CERT_DAYS := 3650
 SERVER_DAYS := 365
+CLIENT_CERT_DAYS := 365
 OCSP_DAYS := 365
 OPENSSL_ARGS := -config ./openssl.cnf
 # Files and directories.
@@ -71,6 +72,9 @@ server: ##@targets Creates a new server certificate. Needed arguments SERVER_NAM
 	&& $(PRINT_ROOT_KEY_PASS) \
 	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions etcd_server -days $(SERVER_DAYS) -notext -md sha256 -in $$SERVER_CSR -out $$SERVER_CERT
 .PHONY: server
+
+server-verify: _verify_server ##@targets Verifies the etcd server certificate against the CA certificate.
+.PHONY: server-verify
 
 client: ##@targets Creates a new client certificate, needed argument CLIENT_NAME.
 	$(call check_defined, CLIENT_NAME, The client name for the request)
