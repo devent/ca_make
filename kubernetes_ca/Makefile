@@ -24,6 +24,7 @@ SERVER_KEY_INSECURE := private/server_key_insecure.pem
 SERVER_CERT := certs/server_cert.pem
 SERVER_CSR := csr/server_csr.pem
 SERVER_CERT_DAYS := 365
+USER_CERT_DAYS := 30
 # Worker certificate.
 WORKER_CERT_DAYS := 365
 # Tools.
@@ -56,7 +57,7 @@ verify: ##@targets Verifies the kubernetes CA certificate against the intermedia
 	set $(SET_FLAG) \
 	&& current_pwd=$$PWD \
 	&& cd ../intermediate \
-	&& $(OPENSSL) verify -CAfile certs/ca_chain_cert.pem "$$current_pwd/$(CA_CERT)"
+	&& $(OPENSSL) verify -CAfile $(CA_CHAIN) "$$current_pwd/$(CA_CERT)"
 .PHONY: verify
 
 worker: ##@targets Creates a new worker certificate, needed arguments are WORKER_IP and WORKER_NAME.
@@ -76,6 +77,25 @@ worker: ##@targets Creates a new worker certificate, needed arguments are WORKER
 	&& $(PRINT_ROOT_KEY_PASS) \
 	&& WORKER_IP=$(WORKER_IP) $(OPENSSL) ca -config ./openssl_worker.cnf -create_serial -extensions v3_req -days $(WORKER_CERT_DAYS) -notext -md sha256 -in $$WORKER_CSR -out $$WORKER_CERT
 .PHONY: worker
+
+user: ##@targets Creates a new user certificate, needed arguments are USER_NAME.
+	$(call check_defined, USER_NAME, The user name)
+	set $(SET_FLAG) \
+	&& USER_KEY=private/$(USER_NAME)_key.pem \
+	&& USER_KEY_INSECURE=private/$(USER_NAME)_key_insecure.pem \
+	&& USER_CSR=csr/$(USER_NAME)_csr.pem \
+	&& USER_CERT=certs/$(USER_NAME)_cert.pem \
+	&& USER_KEY_PASS="passwords/`basename $$USER_KEY`.txt" \
+	&& $(PWGEN) 128 1 > "$$USER_KEY_PASS" \
+	&& $(call printInfo2, "$$USER_KEY_PASS: `cat $$USER_KEY_PASS`") \
+	&& $(OPENSSL) genrsa -aes256 -out $$USER_KEY $(SERVER_KEY_SIZE) \
+	&& $(OPENSSL) rsa -in $$USER_KEY -out $$USER_KEY_INSECURE \
+	&& $(OPENSSL) req -config ./openssl_user.cnf -key $$USER_KEY_INSECURE -new -sha256 -out $$USER_CSR -subj "/CN=$(USER_NAME)" \
+	&& $(PRINT_ROOT_KEY_PASS) \
+	&& $(OPENSSL) ca -config ./openssl_user.cnf -create_serial -extensions v3_req -days $(USER_CERT_DAYS) -notext -md sha256 -in $$USER_CSR -out $$USER_CERT \
+	&& $(call printInfo2, "$$USER_KEY_PASS: `cat $$USER_KEY_PASS`") \
+	&& $(OPENSSL) pkcs12 -export -inkey $$USER_KEY -in $$USER_CERT -certfile $(CA_CHAIN) -out private/$$USER_KEY.pfx
+.PHONY: user
 
 $(DIRS):
 	mkdir -p $(DIRS)
