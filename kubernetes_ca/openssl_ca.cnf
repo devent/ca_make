@@ -13,10 +13,10 @@ KEY_SIZE               = 2048
 KEY_COUNTRY            = DE
 KEY_PROVINCE           = BAVARIA
 KEY_CITY               = MUNICH
-KEY_ORG                = ERWIN MUELLER
-KEY_ORGUNIT            = ERWIN MUELLER Certificate Authority
-KEY_COMMON_NAME        = ERWIN MUELLER Root CA
-KEY_EMAIL              = admin@muellerpublic.de
+KEY_ORG                = ROBOBEE-TEST
+KEY_ORGUNIT            = ROBOBEE-TEST Certificate Authority
+KEY_COMMON_NAME        = ROBOBEE-TEST Root CA
+KEY_EMAIL              = admin@robobee-test.test
 
 # Set the CRL distribution URL.
 CRL_URL                = URI:https://muellerpublic.de/intermediate.crl.pem
