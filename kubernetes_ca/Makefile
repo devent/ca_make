@@ -4,7 +4,6 @@ include ../utils/Makefile.help
 include ../utils/Makefile.ca
 # Misc.
 SHELL := /bin/bash
-CA_CERT_DAYS := 3650
 OPENSSL_ARGS := -config ./openssl.cnf
 # Files and directories.
 DIRS := certs csr crl newcerts private passwords
@@ -23,7 +22,6 @@ SERVER_KEY := private/server_key.pem
 SERVER_KEY_INSECURE := private/server_key_insecure.pem
 SERVER_CERT := certs/server_cert.pem
 SERVER_CSR := csr/server_csr.pem
-SERVER_CERT_DAYS := 365
 # Worker certificate.
 WORKER_CERT_DAYS := 365
 # Tools.
@@ -98,7 +96,7 @@ $(CA_CERT):
 	&& cd ../intermediate \
 	&& ROOT_KEY_PASS="passwords/intermediate_key.pem.txt" \
 	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`") \
-	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions v3_intermediate_ca -days $(CA_CERT_DAYS) -notext -md sha256 -in ../kubernetes_ca/$(CA_CSR) -out ../kubernetes_ca/$(CA_CERT)
+	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions v3_intermediate_ca -days $(CHILD_CA_CERT_DAYS) -notext -md sha256 -in ../kubernetes_ca/$(CA_CSR) -out ../kubernetes_ca/$(CA_CERT)
 
 $(SERVER_KEY):
 	set $(SET_FLAG) \

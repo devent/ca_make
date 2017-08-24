@@ -4,7 +4,6 @@ include ../utils/Makefile.help
 include ../utils/Makefile.ca
 # Misc.
 SHELL := /bin/bash
-CA_CERT_DAYS := 7300
 OPENSSL_ARGS := -config ./openssl.cnf
 # Files and directories.
 DIRS := certs csr crl newcerts private passwords
@@ -57,4 +56,4 @@ $(ROOT_KEY):
 
 $(CA_CERT):
 	$(call printInfo1, "Default values can be used.")
-	$(OPENSSL) req $(OPENSSL_ARGS) -key $(ROOT_KEY) -new -x509 -days $(CA_CERT_DAYS) -sha256 -extensions v3_ca -out $(CA_CERT)
+	$(OPENSSL) req $(OPENSSL_ARGS) -key $(ROOT_KEY) -new -x509 -days $(ROOT_CA_CERT_DAYS) -sha256 -extensions v3_ca -out $(CA_CERT)

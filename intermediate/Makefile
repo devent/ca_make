@@ -4,9 +4,6 @@ include ../utils/Makefile.help
 include ../utils/Makefile.ca
 # Misc.
 SHELL := /bin/bash
-CA_CERT_DAYS := 3650
-SERVER_DAYS := 375
-OCSP_DAYS := 375
 OPENSSL_ARGS := -config ./openssl.cnf
 # Files and directories.
 DIRS := certs csr crl newcerts private passwords
@@ -62,7 +59,7 @@ server: _create_key _create_crt ##@targets Creates a new server certificate.
 	&& $(SERVER_ARGS) \
 	&& $(call printInfo1, Signing $$SERVER_CSR...) \
 	&& $(PRINT_ROOT_KEY_PASS) \
-	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions server_cert -days $(SERVER_DAYS) -notext -md sha256 -in $$SERVER_CSR -out $$SERVER_CERT
+	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions server_cert -days $(SERVER_CERT_DAYS) -notext -md sha256 -in $$SERVER_CSR -out $$SERVER_CERT
 .PHONY: server
 
 show-server: _show_server ##@targets Shows the server certificate. Needed arguments: SERVER_NAME.
@@ -111,7 +108,7 @@ $(CA_CERT):
 	&& cd ../root \
 	&& ROOT_KEY_PASS="passwords/ca_key.pem.txt" \
 	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`") \
-	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions v3_intermediate_ca -days $(CA_CERT_DAYS) -notext -md sha256 -in ../intermediate/$(CA_CSR) -out ../intermediate/$(CA_CERT)
+	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions v3_intermediate_ca -days $(INTERMEDIATE_CA_CERT_DAYS) -notext -md sha256 -in ../intermediate/$(CA_CSR) -out ../intermediate/$(CA_CERT)
 
 $(CA_CHAIN):
 	cat $(CA_CERT) ../root/certs/ca_cert.pem > $(CA_CHAIN)

@@ -16,6 +16,24 @@ SERVER_KEY_SIZE ?= 4096
 # Sets the client key size.
 CLIENT_KEY_SIZE ?= 4096
 
+# The root CA valid days.
+ROOT_CA_CERT_DAYS := 7300
+
+# The intermediate CA valid days.
+INTERMEDIATE_CA_CERT_DAYS := 3650
+
+# The child CA valid days.
+CHILD_CA_CERT_DAYS := 365
+
+# Default server certificate valid days.
+SERVER_CERT_DAYS := 365
+
+# Default client certificate valid days.
+CLIENT_CERT_DAYS := 365
+
+#
+OCSP_DAYS := 365
+
 # Tools.
 OPENSSL := /usr/bin/openssl
 PWGEN := /usr/bin/pwgen
