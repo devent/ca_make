@@ -15,9 +15,6 @@ ROOT_KEY := private/intermediate_key.pem
 CA_CSR := csr/intermediate_csr.pem
 CA_CERT := certs/intermediate_cert.pem
 CA_CHAIN := certs/ca_chain_cert.pem
-# Tools.
-OPENSSL := /usr/bin/openssl
-PWGEN := /usr/bin/pwgen
 # Makefile.
 .DEFAULT_GOAL := run
 

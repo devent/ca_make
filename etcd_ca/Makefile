@@ -16,9 +16,6 @@ CA_CSR := csr/etcd_csr.pem
 CA_CERT := certs/etcd_cert.pem
 CA_CHAIN := certs/ca_chain_cert.pem
 CRL_FILE := crl/etcd_crl.pem
-# Tools.
-OPENSSL := /usr/bin/openssl
-PWGEN := /usr/bin/pwgen
 # Makefile.
 .DEFAULT_GOAL := run
 
