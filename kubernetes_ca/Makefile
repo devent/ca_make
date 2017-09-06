@@ -77,7 +77,7 @@ worker: ##@targets Creates a new worker certificate, needed arguments are WORKER
 	&& WORKER_IP=$(WORKER_IP) $(OPENSSL) ca -config ./openssl_worker.cnf -create_serial -extensions v3_req -days $(WORKER_CERT_DAYS) -notext -md sha256 -in $$WORKER_CSR -out $$WORKER_CERT
 .PHONY: worker
 
-user: ##@targets Creates a new user certificate, needed arguments are USER_NAME.
+user: ##@targets Creates a new user certificate, needed arguments are USER_NAME, optional arguments are USER_GROUP.
 	$(call check_defined, USER_NAME, The user name)
 	set $(SET_FLAG) \
 	&& USER_KEY=private/$(USER_NAME)_key.pem \
@@ -85,11 +85,14 @@ user: ##@targets Creates a new user certificate, needed arguments are USER_NAME.
 	&& USER_CSR=csr/$(USER_NAME)_csr.pem \
 	&& USER_CERT=certs/$(USER_NAME)_cert.pem \
 	&& USER_KEY_PASS="passwords/`basename $$USER_KEY`.txt" \
+	&& USER_GROUP=$(USER_GROUP) \
+	&& SUBJ="/CN=$$USER_NAME" \
+	&& if [ -n "$$USER_GROUP" ]; then SUBJ="$$SUBJ/O=$$USER_GROUP"; fi \
 	&& $(PWGEN) 128 1 > "$$USER_KEY_PASS" \
 	&& $(call printInfo2, "$$USER_KEY_PASS: `cat $$USER_KEY_PASS`") \
 	&& $(OPENSSL) genrsa -aes256 -out $$USER_KEY $(SERVER_KEY_SIZE) \
 	&& $(OPENSSL) rsa -in $$USER_KEY -out $$USER_KEY_INSECURE \
-	&& $(OPENSSL) req -config ./openssl_user.cnf -key $$USER_KEY_INSECURE -new -sha256 -out $$USER_CSR -subj "/CN=$(USER_NAME)" \
+	&& $(OPENSSL) req -config ./openssl_user.cnf -key $$USER_KEY_INSECURE -new -sha256 -out $$USER_CSR -subj "$$SUBJ" \
 	&& $(PRINT_ROOT_KEY_PASS) \
 	&& $(OPENSSL) ca -config ./openssl_user.cnf -create_serial -extensions v3_req -days $(USER_CERT_DAYS) -notext -md sha256 -in $$USER_CSR -out $$USER_CERT \
 	&& $(call printInfo2, "$$USER_KEY_PASS: `cat $$USER_KEY_PASS`") \
