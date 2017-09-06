@@ -8,14 +8,6 @@
 HOME                   = .
 RANDFILE               = $ENV::HOME/.rnd
 
-# Change those for you own needs.
-K8S_SERVICE_IP         = 10.3.0.1
-MASTER_HOST            = 192.168.56.200
-# For HA configuration.
-MASTER_DNS_NAME        =
-MASTER_IP              =
-MASTER_LOADBALANCER_IP =
-
 [ new_oids ]
 
 # We can add new OIDs in here for use by 'ca', 'req' and 'ts'.
@@ -95,7 +87,3 @@ distinguished_name = req_distinguished_name
 [ v3_req ]
 basicConstraints = CA:FALSE
 keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-subjectAltName = @alt_names
-
-[alt_names]
-IP.1 = $ENV::WORKER_IP
