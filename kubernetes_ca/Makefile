@@ -54,7 +54,7 @@ verify: ##@targets Verifies the kubernetes CA certificate against the intermedia
 	set $(SET_FLAG) \
 	&& current_pwd=$$PWD \
 	&& cd ../intermediate \
-	&& $(OPENSSL) verify -CAfile certs/ca_chain_cert.pem "$$current_pwd/$(CA_CERT)"
+	&& $(OPENSSL) verify -CAfile $(CA_CHAIN) "$$current_pwd/$(CA_CERT)"
 .PHONY: verify
 
 worker: ##@targets Creates a new worker certificate, needed arguments are WORKER_IP and WORKER_NAME.
