@@ -96,7 +96,7 @@ user: ##@targets Creates a new user certificate, needed arguments are USER_NAME,
 	&& $(PRINT_ROOT_KEY_PASS) \
 	&& $(OPENSSL) ca -config ./openssl_user.cnf -create_serial -extensions v3_req -days $(USER_CERT_DAYS) -notext -md sha256 -in $$USER_CSR -out $$USER_CERT \
 	&& $(call printInfo2, "$$USER_KEY_PASS: `cat $$USER_KEY_PASS`") \
-	&& $(OPENSSL) pkcs12 -export -inkey $$USER_KEY -in $$USER_CERT -certfile $(CA_CHAIN) -out private/$$USER_KEY.pfx
+	&& $(OPENSSL) pkcs12 -export -inkey $$USER_KEY -in $$USER_CERT -certfile $(CA_CHAIN) -out $$USER_KEY.pfx
 .PHONY: user
 
 $(DIRS):
