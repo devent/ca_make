@@ -104,7 +104,8 @@ h2. Examples
 
 <pre>
 make
-make worker WORKER_IP=141.77.8.166 WORKER_NAME=k8-node-0.muellerpublic.de
+make worker WORKER_IP=192.168.56.200 WORKER_NAME=node-0.robobee-test.test
+make user USER_NAME=admin-0 USER_GROUP=system:masters
 </pre>
 
 h2. License
