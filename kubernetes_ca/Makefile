@@ -59,7 +59,7 @@ verify: ##@targets Verifies the kubernetes CA certificate against the intermedia
 	&& $(OPENSSL) verify -CAfile $(CA_CHAIN) "$$current_pwd/$(CA_CERT)"
 .PHONY: verify
 
-worker: ##@targets Creates a new worker certificate, needed arguments are WORKER_IP and WORKER_NAME.
+worker: ##@targets Creates a new worker certificate, needed arguments are WORKER_IP and WORKER_NAME. Example: "make worker WORKER_IP=192.168.56.200 WORKER_NAME=node-0.robobee-test.test"
 	$(call check_defined, WORKER_IP, The worker IP address for the request)
 	$(call check_defined, WORKER_NAME, The worker FQDN for the request)
 	set $(SET_FLAG) \
@@ -77,7 +77,7 @@ worker: ##@targets Creates a new worker certificate, needed arguments are WORKER
 	&& WORKER_IP=$(WORKER_IP) $(OPENSSL) ca -config ./openssl_worker.cnf -create_serial -extensions v3_req -days $(WORKER_CERT_DAYS) -notext -md sha256 -in $$WORKER_CSR -out $$WORKER_CERT
 .PHONY: worker
 
-user: ##@targets Creates a new user certificate, needed arguments are USER_NAME, optional arguments are USER_GROUP.
+user: ##@targets Creates a new user certificate, needed arguments are USER_NAME, optional arguments are USER_GROUP. Example: "make user USER_NAME=admin-0 USER_GROUP=system:masters"
 	$(call check_defined, USER_NAME, The user name)
 	set $(SET_FLAG) \
 	&& USER_KEY=private/$(USER_NAME)_key.pem \
