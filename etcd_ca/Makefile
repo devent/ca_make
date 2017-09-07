@@ -53,7 +53,7 @@ show-crl: ##@targets Shows the certificate revocation list.
 	$(OPENSSL) crl -in $(CRL_FILE) -noout -text
 .PHONY: show-crl
 
-server: ##@targets Creates a new server certificate. Needed arguments SERVER_NAME. Optional arguments are ETCD_SAN. Example: "make server SERVER_NAME=robobee-test.test ETCD_SAN=IP:127.0.0.1,IP:192.168.56.200"
+server: ##@targets Creates a new server certificate. Needed arguments SERVER_NAME. Optional arguments are ETCD_SAN. Example: "make server SERVER_NAME=etcd-0.robobee-test.test ETCD_SAN=IP:127.0.0.1,IP:192.168.56.200,DNS:etcd-0.robobee-test.test"
 	set $(SET_FLAG) \
 	&& ETCD_SAN="$(ETCD_SAN)" \
 	&& if [ -z "$$ETCD_SAN" ]; then $(call printInfo1, "No SANs set in ETCD_SAN"); fi \
