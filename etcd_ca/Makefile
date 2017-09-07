@@ -44,6 +44,7 @@ verify: ##@targets Verifies the etcd CA certificate against the intermediate cer
 .PHONY: verify
 
 regenerate: ##@targets Regenerates the certificate revocation list.
+	mkdir -p csr
 	$(PRINT_ROOT_KEY_PASS)
 	$(OPENSSL) ca $(OPENSSL_ARGS) -gencrl -out $(CRL_FILE)
 .PHONY: regenerate
