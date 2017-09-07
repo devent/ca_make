@@ -73,6 +73,11 @@ _revoke_server: ##@targets Revokes the server certificate. Needed arguments: SER
 	$(PRINT_ROOT_KEY_PASS)
 	$(OPENSSL) ca $(OPENSSL_ARGS) -revoke certs/$(SERVER_NAME)_cert.pem
 	$(MAKE) regenerate
+	rm certs/$(SERVER_NAME)_cert.pem
+	rm csr/$(SERVER_NAME)_csr.pem
+	rm passwords/$(SERVER_NAME)_key.pem.txt
+	rm private/$(SERVER_NAME)_key.pem
+	rm private/$(SERVER_NAME)_key_insecure.pem
 .PHONY: _revoke_server
 
 _ocsp:
