@@ -1,3 +1,4 @@
 R	180907070635Z	170907084430Z	8A9BC66E145B3CBC	unknown	/C=DE/ST=BAVARIA/O=ROBOBEE-TEST/OU=ROBOBEE-TEST ECTD-CA/CN=etcd-0.robobee-test.test/emailAddress=admin@robobee-test.test
 V	180907070929Z		8A9BC66E145B3CBD	unknown	/C=DE/ST=BAVARIA/L=MUNICH/O=ROBOBEE-TEST/OU=ROBOBEE-TEST ECTD-CA/CN=kube-0/emailAddress=admin@robobee-test.test
 V	180907084646Z		8A9BC66E145B3CBE	unknown	/C=DE/ST=BAVARIA/O=ROBOBEE-TEST/OU=ROBOBEE-TEST ECTD-CA/CN=etcd-0.robobee-test.test/emailAddress=admin@robobee-test.test
+V	180913164159Z		8A9BC66E145B3CBF	unknown	/C=DE/ST=BAVARIA/O=ROBOBEE-TEST/OU=ROBOBEE-TEST ECTD-CA/CN=etcd-1.robobee-test.test/emailAddress=admin@robobee-test.test
