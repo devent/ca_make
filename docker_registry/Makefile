@@ -3,10 +3,6 @@ include ../utils/Makefile.functions
 include ../utils/Makefile.help
 include ../utils/Makefile.ca
 # Misc.
-SHELL := /bin/bash
-CA_CERT_DAYS := 3650
-SERVER_DAYS := 365
-OCSP_DAYS := 365
 OPENSSL_ARGS := -config ./openssl.cnf
 # Files and directories.
 DIRS := certs csr crl newcerts private passwords
@@ -18,9 +14,6 @@ ROOT_KEY := private/docker_key.pem
 CA_CSR := csr/docker_csr.pem
 CA_CERT := certs/docker_cert.pem
 CA_CHAIN := certs/ca_chain_cert.pem
-# Tools.
-OPENSSL := /usr/bin/openssl
-PWGEN := /usr/bin/pwgen
 # Makefile.
 .DEFAULT_GOAL := run
 
@@ -49,21 +42,21 @@ verify: ##@targets Verifies the docker certificate against the intermediate cert
 .PHONY: verify
 
 regenerate: ##@targets Regenerates the certificate revocation list.
+	mkdir -p crl
 	$(PRINT_ROOT_KEY_PASS)
-	$(OPENSSL) ca $(OPENSSL_ARGS) -gencrl -out crl/docker.crl.pem
+	$(OPENSSL) ca $(OPENSSL_ARGS) -gencrl -out $(CRL_FILE)
 .PHONY: regenerate
 
 show-crl: ##@targets Shows the certificate revocation list.
 	$(OPENSSL) crl -in crl/docker.crl.pem -noout -text
 .PHONY: show-crl
 
-server: _create_key _create_crt ##@targets Creates a new server certificate.
-	$(call check_defined, SERVER_NAME, The server FQDN for the request)
+server: _create_key _create_crt ##@targets Creates a new server certificate. Needed arguments SERVER_NAME. Optional arguments REGISTRY_SAN. Examples: "make server SERVER_NAME=registry.robobee-test.test", "make server SERVER_NAME=registry.robobee-test.test REGISTRY_SAN=DNS:registry.robobee-test.test,IP:192.168.56.1" (it is needed to specify a DNS SAN if a IP SAN is added.)
 	set $(SET_FLAG) \
 	&& $(SERVER_ARGS) \
 	&& $(call printInfo1, Signing $$SERVER_CSR...) \
 	&& $(PRINT_ROOT_KEY_PASS) \
-	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions server_cert -days $(SERVER_DAYS) -notext -md sha256 -in $$SERVER_CSR -out $$SERVER_CERT
+	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions registry_server -days $(SERVER_CERT_DAYS) -notext -md sha256 -in $$SERVER_CSR -out $$SERVER_CERT
 .PHONY: server
 
 show-server: _show_server ##@targets Shows the server certificate. Needed arguments: SERVER_NAME.
@@ -112,7 +105,7 @@ $(CA_CERT):
 	&& cd ../intermediate \
 	&& ROOT_KEY_PASS="passwords/intermediate_key.pem.txt" \
 	&& $(call printInfo2, "$$ROOT_KEY_PASS: `cat $$ROOT_KEY_PASS`") \
-	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions v3_intermediate_ca -days $(CA_CERT_DAYS) -notext -md sha256 -in ../docker_registry/$(CA_CSR) -out ../docker_registry/$(CA_CERT)
+	&& $(OPENSSL) ca $(OPENSSL_ARGS) -create_serial -extensions v3_intermediate_ca -days $(CHILD_CA_CERT_DAYS) -notext -md sha256 -in ../docker_registry/$(CA_CSR) -out ../docker_registry/$(CA_CERT)
 
 $(CA_CHAIN):
 	cat $(CA_CERT) ../intermediate/certs/intermediate_cert.pem ../root/certs/ca_cert.pem > $(CA_CHAIN)
